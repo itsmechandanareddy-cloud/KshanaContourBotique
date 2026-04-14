@@ -7,7 +7,8 @@ import {
   User, ShieldCheck, ChevronDown, Star, Scissors
 } from "lucide-react";
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/wev163i5_image.png";
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/af1ehik2_image.png";
+const SKETCH_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/a4jq30f0_image.png";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ const LandingPage = () => {
       <nav className="fixed top-0 left-0 right-0 bg-[#FDFBF7]/95 backdrop-blur-md z-50 border-b border-[#EFEBE4]">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={LOGO_URL} alt="Kshana Contour" className="h-12 w-auto" />
+            <img src={LOGO_URL} alt="Kshana Contour" className="h-12 w-12 rounded-lg object-cover" />
           </div>
           <div className="hidden md:flex items-center gap-8">
             <button 
@@ -118,8 +119,8 @@ const LandingPage = () => {
             <div className="relative">
               <div className="absolute -inset-4 bg-[#D19B5A]/20 rounded-full blur-3xl" />
               <img 
-                src={LOGO_URL} 
-                alt="Kshana Contour Logo" 
+                src={SKETCH_URL} 
+                alt="Kshana Contour Fashion" 
                 className="relative w-80 h-80 object-contain"
               />
             </div>
@@ -149,9 +150,9 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <img 
-                src="https://images.unsplash.com/photo-1753162658094-86e570c6a707?w=600"
-                alt="Our Studio"
-                className="rounded-2xl shadow-[0_8px_32px_-8px_rgba(139,102,85,0.15)]"
+                src={LOGO_URL}
+                alt="Kshana Contour Boutique"
+                className="rounded-2xl shadow-[0_8px_32px_-8px_rgba(139,102,85,0.15)] w-full object-cover"
               />
             </div>
             <div className="space-y-6">

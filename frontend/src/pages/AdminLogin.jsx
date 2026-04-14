@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../co
 import { ShieldCheck, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/wev163i5_image.png";
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/af1ehik2_image.png";
 
 const AdminLogin = () => {
   const [phone, setPhone] = useState("");
