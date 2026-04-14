@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, UploadFile, File
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
@@ -9,6 +9,8 @@ import os
 import logging
 import bcrypt
 import jwt
+import requests
+import uuid
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -18,6 +20,55 @@ import secrets
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# ============== OBJECT STORAGE CONFIG ==============
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+APP_NAME = "kshana-contour"
+storage_key = None
+
+def init_storage():
+    """Initialize storage - call once at startup"""
+    global storage_key
+    if storage_key:
+        return storage_key
+    if not EMERGENT_KEY:
+        logger.warning("EMERGENT_LLM_KEY not set - storage disabled")
+        return None
+    try:
+        resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+        resp.raise_for_status()
+        storage_key = resp.json()["storage_key"]
+        logger.info("Object storage initialized successfully")
+        return storage_key
+    except Exception as e:
+        logger.error(f"Storage init failed: {e}")
+        return None
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    """Upload file to object storage"""
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not available")
+    resp = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data, timeout=120
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str) -> tuple:
+    """Download file from object storage"""
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not available")
+    resp = requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key}, timeout=60
+    )
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
 
 ROOT_DIR = Path(__file__).parent
 
@@ -535,6 +586,104 @@ async def log_employee_hours(employee_id: str, data: EmployeeHours, request: Req
     
     return {"message": "Hours logged"}
 
+# ============== FILE UPLOAD ENDPOINTS ==============
+MIME_TYPES = {
+    "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+    "gif": "image/gif", "webp": "image/webp", "pdf": "application/pdf",
+    "doc": "application/msword", "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+}
+
+@api_router.post("/employees/{employee_id}/documents")
+async def upload_employee_document(employee_id: str, file: UploadFile = File(...), request: Request = None):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Verify employee exists
+    employee = await db.employees.find_one({"_id": ObjectId(employee_id)})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Get file extension and content type
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else "bin"
+    content_type = MIME_TYPES.get(ext, file.content_type or "application/octet-stream")
+    
+    # Read file data
+    data = await file.read()
+    
+    # Generate unique path
+    file_id = str(uuid.uuid4())
+    path = f"{APP_NAME}/employees/{employee_id}/{file_id}.{ext}"
+    
+    try:
+        # Upload to storage
+        result = put_object(path, data, content_type)
+        
+        # Create document record
+        doc_record = {
+            "id": file_id,
+            "storage_path": result["path"],
+            "original_filename": file.filename,
+            "content_type": content_type,
+            "size": result.get("size", len(data)),
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Add to employee's documents array
+        await db.employees.update_one(
+            {"_id": ObjectId(employee_id)},
+            {"$push": {"documents": doc_record}}
+        )
+        
+        return {"id": file_id, "filename": file.filename, "message": "Document uploaded successfully"}
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload document")
+
+@api_router.get("/employees/{employee_id}/documents/{doc_id}")
+async def get_employee_document(employee_id: str, doc_id: str, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Find employee and document
+    employee = await db.employees.find_one({"_id": ObjectId(employee_id)})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    documents = employee.get("documents", [])
+    doc = next((d for d in documents if d.get("id") == doc_id), None)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    try:
+        data, content_type = get_object(doc["storage_path"])
+        return Response(
+            content=data,
+            media_type=doc.get("content_type", content_type),
+            headers={"Content-Disposition": f'inline; filename="{doc.get("original_filename", "document")}"'}
+        )
+    except Exception as e:
+        logger.error(f"Download failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to download document")
+
+@api_router.delete("/employees/{employee_id}/documents/{doc_id}")
+async def delete_employee_document(employee_id: str, doc_id: str, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Remove document from employee's array (soft delete - storage has no delete API)
+    result = await db.employees.update_one(
+        {"_id": ObjectId(employee_id)},
+        {"$pull": {"documents": {"id": doc_id}}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return {"message": "Document deleted"}
+
 # ============== MATERIALS ENDPOINTS ==============
 @api_router.post("/materials")
 async def create_material(data: MaterialCreate, request: Request):
@@ -698,6 +847,12 @@ app.add_middleware(
 # ============== STARTUP EVENT ==============
 @app.on_event("startup")
 async def startup_event():
+    # Initialize object storage
+    try:
+        init_storage()
+    except Exception as e:
+        logger.warning(f"Storage initialization skipped: {e}")
+    
     # Create indexes
     await db.customers.create_index("phone", unique=True)
     await db.admins.create_index("phone", unique=True)
