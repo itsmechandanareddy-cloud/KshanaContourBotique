@@ -1,53 +1,238 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect, createContext, useContext } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { Toaster } from "./components/ui/sonner";
+
+// Pages
+import LandingPage from "./pages/LandingPage";
+import AdminLogin from "./pages/AdminLogin";
+import CustomerLogin from "./pages/CustomerLogin";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminOrders from "./pages/admin/Orders";
+import AdminOrderForm from "./pages/admin/OrderForm";
+import AdminEmployees from "./pages/admin/Employees";
+import AdminMaterials from "./pages/admin/Materials";
+import AdminReports from "./pages/admin/Reports";
+import AdminGallery from "./pages/admin/Gallery";
+import AdminReviewsContact from "./pages/admin/ReviewsContact";
+import CustomerHome from "./pages/customer/Home";
+import CustomerOrders from "./pages/customer/MyOrders";
+import CustomerOrderDetail from "./pages/customer/OrderDetail";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+export const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+// Auth Context
+const AuthContext = createContext(null);
+
+export const useAuth = () => useContext(AuthContext);
+
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      const response = await axios.get(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
+      });
+      setUser(response.data);
+    } catch (error) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  const login = async (phone, password, isAdmin = true) => {
+    try {
+      const endpoint = isAdmin ? "/auth/admin/login" : "/auth/customer/login";
+      const payload = isAdmin 
+        ? { phone, password } 
+        : { phone, dob: password };
+      
+      const response = await axios.post(`${API}${endpoint}`, payload, {
+        withCredentials: true
+      });
+      
+      const userData = response.data;
+      localStorage.setItem("token", userData.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+      return { success: true, user: userData };
+    } catch (error) {
+      const msg = error.response?.data?.detail || "Login failed";
+      return { success: false, error: msg };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
+    } catch (e) {}
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+  };
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth, setUser }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 
+// Protected Route Component
+const ProtectedRoute = ({ children, role }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#C05C3B] border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    const redirectTo = role === "admin" ? "/admin/login" : "/login";
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+  }
+
+  if (role && user.role !== role) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+// Main App Component
 function App() {
   return (
-    <div className="App">
+    <AuthProvider>
       <BrowserRouter>
+        <Toaster position="top-right" richColors />
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<CustomerLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+
+          {/* Customer Routes */}
+          <Route
+            path="/customer"
+            element={
+              <ProtectedRoute role="customer">
+                <CustomerHome />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/orders"
+            element={
+              <ProtectedRoute role="customer">
+                <CustomerOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/orders/:orderId"
+            element={
+              <ProtectedRoute role="customer">
+                <CustomerOrderDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders/new"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminOrderForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders/:orderId"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminOrderForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/employees"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminEmployees />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/materials"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminMaterials />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/gallery"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminGallery />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reviews"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminReviewsContact />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
-    </div>
+    </AuthProvider>
   );
 }
 
