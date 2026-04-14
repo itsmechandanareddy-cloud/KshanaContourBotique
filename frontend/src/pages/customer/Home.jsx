@@ -9,7 +9,7 @@ import {
   Mail, Star, LogOut, ChevronRight, Scissors
 } from "lucide-react";
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/af1ehik2_image.png";
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/5x4gmkkq_image.png";
 
 const CustomerHome = () => {
   const navigate = useNavigate();

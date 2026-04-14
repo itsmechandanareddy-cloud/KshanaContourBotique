@@ -7,7 +7,7 @@ import {
   User, ShieldCheck, ChevronDown, Star, Scissors
 } from "lucide-react";
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/af1ehik2_image.png";
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/5x4gmkkq_image.png";
 const SKETCH_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/a4jq30f0_image.png";
 
 const LandingPage = () => {
@@ -22,7 +22,7 @@ const LandingPage = () => {
     { id: 3, image_url: "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/3u4ltgp8_WhatsApp%20Image%202026-04-14%20at%2012.30.20%20PM%20%281%29.jpeg", title: "Floral Embroidery" },
     { id: 4, image_url: "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/l27qx3pj_WhatsApp%20Image%202026-04-14%20at%2012.30.20%20PM.jpeg", title: "Red Silk Blouse" },
     { id: 5, image_url: "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/6oa9xqr3_WhatsApp%20Image%202026-04-14%20at%2012.30.19%20PM.jpeg", title: "Purple Velvet Designer" },
-    { id: 6, image_url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400", title: "Hand Embroidery Work" },
+    { id: 6, image_url: "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/rxsg504q_WhatsApp%20Image%202026-04-14%20at%2012.30.19%20PM%20%281%29.jpeg", title: "Blue Zardozi Blouse" },
   ];
 
   const services = [
