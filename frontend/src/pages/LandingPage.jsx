@@ -150,7 +150,7 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <img 
-                src={LOGO_URL}
+                src="https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/sybd095l_image.png"
                 alt="Kshana Contour Boutique"
                 className="rounded-2xl shadow-[0_8px_32px_-8px_rgba(139,102,85,0.15)] w-full object-cover"
               />

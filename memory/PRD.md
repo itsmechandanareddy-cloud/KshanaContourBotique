@@ -49,6 +49,7 @@ Build a website for Kshana Contour Boutique with:
 - [x] WhatsApp floating button on all pages
 - [x] Google Reviews link
 - [x] Contact info with phone, email, maps, Instagram
+- [x] Order Print/Invoice generation with measurements, billing, payment history
 - [x] Updated logo and about section image with user-provided branding assets
 
 ## Prioritized Backlog
@@ -56,11 +57,9 @@ Build a website for Kshana Contour Boutique with:
 - None remaining
 
 ### P1 (High)
-- Twilio SMS integration (requires API keys from user)
 - Admin Gallery Image Upload UI (connect to object storage)
 
 ### P2 (Medium)
-- Order print/invoice generation
 - Customer notifications on status change
 - WhatsApp direct messaging integration
 

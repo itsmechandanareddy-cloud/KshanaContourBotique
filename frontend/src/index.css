@@ -233,3 +233,15 @@ button:active {
     display: contents !important;
   }
 }
+
+
+/* Print Styles */
+@media print {
+  body { background: white !important; margin: 0; padding: 0; }
+  .print\:hidden { display: none !important; }
+  .print\:shadow-none { box-shadow: none !important; }
+  .print\:my-0 { margin-top: 0 !important; margin-bottom: 0 !important; }
+  .print\:p-6 { padding: 1.5rem !important; }
+  nav, footer, .whatsapp-float, [data-debug-wrapper] > div:first-child { display: none !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}

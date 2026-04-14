@@ -278,15 +278,29 @@ const OrderForm = () => {
               {isEdit ? `Order #${orderId}` : "Create New Order"}
             </h1>
           </div>
-          <Button
-            type="submit"
-            disabled={saving}
-            className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full px-6"
-            data-testid="save-order-button"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {saving ? "Saving..." : "Save Order"}
-          </Button>
+          <div className="flex gap-2">
+            {isEdit && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(`/admin/invoice/${orderId}`)}
+                className="border-[#EFEBE4] hover:border-[#7E8B76] hover:text-[#7E8B76] rounded-full px-6"
+                data-testid="print-invoice-from-form"
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Invoice
+              </Button>
+            )}
+            <Button
+              type="submit"
+              disabled={saving}
+              className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full px-6"
+              data-testid="save-order-button"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {saving ? "Saving..." : "Save Order"}
+            </Button>
+          </div>
         </div>
 
         {/* Customer Details */}

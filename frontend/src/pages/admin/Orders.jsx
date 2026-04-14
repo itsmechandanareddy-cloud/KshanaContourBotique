@@ -9,7 +9,7 @@ import { Input } from "../../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { 
   Plus, Search, Eye, Edit, Phone, Calendar, 
-  IndianRupee, Clock, CheckCircle, Truck, AlertTriangle
+  IndianRupee, Clock, CheckCircle, Truck, AlertTriangle, Printer
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -236,6 +236,16 @@ const Orders = () => {
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           View
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/admin/invoice/${order.order_id}`)}
+                          className="border-[#EFEBE4] hover:border-[#7E8B76] hover:text-[#7E8B76] rounded-lg"
+                          data-testid={`print-order-${order.order_id}`}
+                        >
+                          <Printer className="w-4 h-4 mr-1" />
+                          Invoice
                         </Button>
                         {order.status !== "delivered" && (
                           <Select 
