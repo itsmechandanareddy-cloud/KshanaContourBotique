@@ -40,6 +40,7 @@ const Orders = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [showMsgModal, setShowMsgModal] = useState(null); // {orderId, type} - type: 'status_update'|'order_created'|'payment_reminder'|'custom'
 
   useEffect(() => {
     fetchOrders();
@@ -92,18 +93,8 @@ const Orders = () => {
       );
       toast.success(`Order status updated to ${statusLabels[newStatus]}`);
       fetchOrders();
-      
-      // Open WhatsApp with status message
-      try {
-        const waResp = await axios.get(`${API}/orders/${orderId}/whatsapp-message?message_type=status_update`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (waResp.data?.whatsapp_url) {
-          window.open(waResp.data.whatsapp_url, "_blank");
-        }
-      } catch (e) {
-        // WhatsApp is optional, don't block
-      }
+      // Ask if user wants to notify customer
+      setShowMsgModal({ orderId, type: "status_update" });
     } catch (error) {
       toast.error("Failed to update status");
     }
@@ -118,8 +109,31 @@ const Orders = () => {
       if (resp.data?.whatsapp_url) {
         window.open(resp.data.whatsapp_url, "_blank");
       }
+      setShowMsgModal(null);
     } catch (error) {
       toast.error("Failed to generate WhatsApp message");
+    }
+  };
+
+  const sendSMS = async (orderId, messageType = "status_update") => {
+    try {
+      const token = localStorage.getItem("token");
+      const resp = await axios.get(`${API}/orders/${orderId}/whatsapp-message?message_type=${messageType}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Copy message to clipboard for manual SMS
+      if (resp.data?.message) {
+        await navigator.clipboard.writeText(resp.data.message);
+        toast.success("Message copied! Open your SMS app and paste it.");
+        // Also try to open SMS link
+        const phone = resp.data.phone?.replace("91", "");
+        if (phone) {
+          window.open(`sms:${phone}?body=${encodeURIComponent(resp.data.message)}`, "_self");
+        }
+      }
+      setShowMsgModal(null);
+    } catch (error) {
+      toast.error("Failed to generate message");
     }
   };
 
@@ -300,12 +314,12 @@ const Orders = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => sendWhatsApp(order.order_id)}
+                          onClick={() => setShowMsgModal({ orderId: order.order_id, type: "status_update" })}
                           className="border-[#EFEBE4] hover:border-[#25D366] hover:text-[#25D366] rounded-lg"
-                          data-testid={`whatsapp-order-${order.order_id}`}
+                          data-testid={`notify-order-${order.order_id}`}
                         >
                           <MessageCircle className="w-4 h-4 mr-1" />
-                          WhatsApp
+                          Notify
                         </Button>
                         <Button
                           variant="outline"
@@ -366,6 +380,67 @@ const Orders = () => {
             <Button onClick={handleDeleteOrder} className="bg-[#B85450] hover:bg-[#9A4440] text-white rounded-full" data-testid="confirm-delete-btn">
               Delete Order
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notify Customer Modal */}
+      <Dialog open={!!showMsgModal} onOpenChange={() => setShowMsgModal(null)}>
+        <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4]">
+          <DialogHeader>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">
+              Notify Customer — #{showMsgModal?.orderId}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-[#5C504A]">How would you like to notify the customer?</p>
+            
+            {/* Message Type */}
+            <div className="space-y-2">
+              <Label className="text-[#5C504A] text-xs">Message Type</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: "status_update", label: "Status Update" },
+                  { value: "order_created", label: "Order Created" },
+                  { value: "payment_reminder", label: "Payment Reminder" },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setShowMsgModal(prev => prev ? { ...prev, type: value } : null)}
+                    className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
+                      showMsgModal?.type === value 
+                        ? "bg-[#C05C3B] text-white border-[#C05C3B]" 
+                        : "bg-white text-[#5C504A] border-[#EFEBE4] hover:border-[#C05C3B]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Send Options */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Button
+                onClick={() => sendWhatsApp(showMsgModal?.orderId, showMsgModal?.type)}
+                className="bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-xl py-6 flex flex-col items-center gap-1"
+                data-testid="send-whatsapp"
+              >
+                <MessageCircle className="w-6 h-6" />
+                <span className="text-sm font-medium">WhatsApp</span>
+              </Button>
+              <Button
+                onClick={() => sendSMS(showMsgModal?.orderId, showMsgModal?.type)}
+                className="bg-[#7A8B99] hover:bg-[#637382] text-white rounded-xl py-6 flex flex-col items-center gap-1"
+                data-testid="send-sms"
+              >
+                <Phone className="w-6 h-6" />
+                <span className="text-sm font-medium">SMS</span>
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMsgModal(null)} className="rounded-full w-full">Don't Notify</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
