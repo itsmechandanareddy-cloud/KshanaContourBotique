@@ -599,15 +599,41 @@ const OrderForm = () => {
                   </div>
                 </div>
 
-                {/* Additional Notes */}
+                {/* Item Reference Images */}
+                {isEdit && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[#5C504A]">Reference Images</Label>
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
+                        <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
+                        <span className="text-[#5C504A]">{uploadingImage ? "..." : "Upload"}</span>
+                        <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `item_${index}_ref`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
+                      </label>
+                    </div>
+                    {orderImages.filter(img => img.image_type?.startsWith(`item_${index}`) || img.image_type?.includes(`_${index}`)).length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {orderImages.filter(img => img.image_type?.startsWith(`item_${index}`) || img.image_type?.includes(`_${index}`)).map((img) => (
+                          <div key={img.id} className="group relative aspect-square rounded-lg overflow-hidden bg-[#F7F2EB]">
+                            <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button size="icon" variant="destructive" onClick={() => handleDeleteImage(img.id)} className="rounded-full w-7 h-7 bg-[#B85450]/90"><X className="w-3 h-3" /></Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Description */}
                 <div className="space-y-2">
-                  <Label className="text-[#5C504A]">Item Notes</Label>
+                  <Label className="text-[#5C504A]">Description / Notes</Label>
                   <Textarea
                     value={item.additional_notes}
                     onChange={(e) => handleItemChange(index, "additional_notes", e.target.value)}
                     className="bg-white border-[#EFEBE4] rounded-xl"
                     rows={2}
-                    placeholder="Any special instructions for this item..."
+                    placeholder="Any special instructions, fabric details, or description..."
                     data-testid={`additional-notes-${index}`}
                   />
                 </div>
@@ -615,45 +641,6 @@ const OrderForm = () => {
             ))}
           </CardContent>
         </Card>
-
-        {/* Reference Images */}
-        {isEdit && (
-          <Card className="bg-white border-[#EFEBE4]">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">
-                Reference Images
-              </CardTitle>
-              <label className="flex items-center gap-2 px-4 py-2 border border-[#C05C3B] text-[#C05C3B] rounded-full cursor-pointer hover:bg-[#C05C3B]/10 transition-colors text-sm font-medium">
-                <Upload className="w-4 h-4" />
-                {uploadingImage ? "Uploading..." : "Upload Image"}
-                <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, "reference")} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} data-testid="reference-image-upload" />
-              </label>
-            </CardHeader>
-            <CardContent>
-              {orderImages.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {orderImages.map((img) => (
-                    <div key={img.id} className="group relative aspect-square rounded-xl overflow-hidden bg-[#F7F2EB]">
-                      <img src={getImageUrl(img)} alt={img.image_type || "Reference"} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                        <span className="text-white text-xs capitalize px-2 py-1 bg-black/40 rounded">{img.image_type?.replace("_", " ")}</span>
-                        <Button size="icon" variant="destructive" onClick={() => handleDeleteImage(img.id)} className="rounded-full w-8 h-8 bg-[#B85450]/90">
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-[#8A7D76]">
-                  <ImageIcon className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                  <p className="text-sm">No reference images uploaded yet</p>
-                  <p className="text-xs mt-1">Upload design references, neck patterns, or fabric samples</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
         {/* Measurements (Single Section for Order) */}
         <Card className="bg-white border-[#EFEBE4]">

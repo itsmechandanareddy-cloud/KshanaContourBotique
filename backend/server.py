@@ -231,7 +231,7 @@ class EmployeeCreate(BaseModel):
     name: str
     phone: str
     email: Optional[str] = None
-    role: str
+    role: str  # master / tailor / worker
     address: Optional[str] = None
     joining_date: str
     salary: float
@@ -244,6 +244,16 @@ class EmployeePayment(BaseModel):
     notes: Optional[str] = None
 
 class EmployeeHours(BaseModel):
+    date: str
+    hours: float
+    order_id: Optional[str] = None
+    item_index: Optional[int] = None
+    notes: Optional[str] = None
+
+class WorkAssignment(BaseModel):
+    employee_id: str
+    order_id: str
+    item_index: Optional[int] = None
     date: str
     hours: float
     notes: Optional[str] = None
@@ -696,6 +706,77 @@ async def log_employee_hours(employee_id: str, data: EmployeeHours, request: Req
         raise HTTPException(status_code=404, detail="Employee not found")
     
     return {"message": "Hours logged"}
+
+@api_router.delete("/employees/{employee_id}")
+async def delete_employee(employee_id: str, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    result = await db.employees.delete_one({"_id": ObjectId(employee_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return {"message": "Employee deleted"}
+
+@api_router.post("/employees/{employee_id}/work")
+async def assign_work(employee_id: str, data: WorkAssignment, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    work = data.model_dump()
+    work["assigned_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.employees.update_one(
+        {"_id": ObjectId(employee_id)},
+        {"$push": {"work_assignments": work}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Also log hours
+    await db.employees.update_one(
+        {"_id": ObjectId(employee_id)},
+        {"$push": {"hours_log": {
+            "date": data.date,
+            "hours": data.hours,
+            "order_id": data.order_id,
+            "item_index": data.item_index,
+            "notes": data.notes
+        }}}
+    )
+    return {"message": "Work assigned"}
+
+# ============== REPORT DETAIL ENDPOINTS ==============
+@api_router.get("/reports/orders-by-status")
+async def get_orders_by_status(status: str, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    orders = await db.orders.find({"status": status}, {"_id": 0}).sort("delivery_date", 1).to_list(1000)
+    return orders
+
+@api_router.get("/reports/due-soon")
+async def get_due_soon_orders(request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    now = datetime.now(timezone.utc)
+    all_orders = await db.orders.find({"status": {"$in": ["pending", "in_progress", "ready"]}}, {"_id": 0}).to_list(10000)
+    due_soon = []
+    for o in all_orders:
+        delivery = o.get("delivery_date", "")
+        if delivery:
+            try:
+                dd = datetime.fromisoformat(delivery.replace("Z", "+00:00")) if "T" in delivery else datetime.strptime(delivery, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                days = (dd - now).days
+                if days <= 2:
+                    o["days_until"] = days
+                    due_soon.append(o)
+            except:
+                pass
+    return due_soon
 
 # ============== FILE UPLOAD ENDPOINTS ==============
 MIME_TYPES = {
