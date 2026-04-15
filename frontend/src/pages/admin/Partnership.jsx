@@ -140,25 +140,61 @@ const Partnership = () => {
           <div className={`text-center p-4 bg-white border rounded-xl ${(p?.summary?.remaining_after_returns || 0) >= 0 ? "border-[#7E8B76]" : "border-[#B85450]"}`}><p className="text-xs text-[#8A7D76]">Profit to Split</p><p className={`font-bold ${(p?.summary?.remaining_after_returns || 0) >= 0 ? "text-[#7E8B76]" : "text-[#B85450]"}`}>{fmt(p?.summary?.remaining_after_returns)}</p></div>
         </div>
 
-        {/* Monthly Breakdown */}
+        {/* Monthly Settlement Report */}
         {p?.monthly?.length > 0 && (
           <Card className="bg-white border-[#EFEBE4]">
-            <CardHeader><CardTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">Monthly Breakdown</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">Monthly Settlement Report</CardTitle></CardHeader>
             <CardContent>
+              <p className="text-xs text-[#8A7D76] mb-4">Investments are settled first (proportionally), then remaining profit is split 50/50. Withdrawals from Kshana account are auto-tracked.</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#F7F2EB]"><th className="py-2 px-3 text-left">Month</th><th className="py-2 px-3 text-right">Chandana</th><th className="py-2 px-3 text-right">Akanksha</th><th className="py-2 px-3 text-right">Kshana (SBI)</th><th className="py-2 px-3 text-right">Income</th></tr></thead>
+                  <thead>
+                    <tr className="bg-[#F7F2EB]">
+                      <th className="py-2 px-2 text-left text-[#5C504A] text-xs">Month</th>
+                      <th className="py-2 px-2 text-right text-[#C05C3B] text-xs">Chandana Inv.</th>
+                      <th className="py-2 px-2 text-right text-[#D19B5A] text-xs">Akanksha Inv.</th>
+                      <th className="py-2 px-2 text-right text-[#7E8B76] text-xs">Income</th>
+                      <th className="py-2 px-2 text-right text-[#7A8B99] text-xs">SBI Out</th>
+                      <th className="py-2 px-2 text-right text-[#2D2420] text-xs">Pool</th>
+                      <th className="py-2 px-2 text-right text-[#C05C3B] text-xs">Chandana Gets</th>
+                      <th className="py-2 px-2 text-right text-[#D19B5A] text-xs">Akanksha Gets</th>
+                    </tr>
+                  </thead>
                   <tbody>{p.monthly.map((m, i) => (
                     <tr key={i} className="border-b border-[#EFEBE4]">
-                      <td className="py-2 px-3 font-medium">{fmtMonth(m.month)}</td>
-                      <td className="py-2 px-3 text-right text-[#C05C3B]">{m.chandana > 0 ? fmt(m.chandana) : "-"}</td>
-                      <td className="py-2 px-3 text-right text-[#D19B5A]">{m.akanksha > 0 ? fmt(m.akanksha) : "-"}</td>
-                      <td className="py-2 px-3 text-right text-[#7A8B99]">{m.sbi > 0 ? fmt(m.sbi) : "-"}</td>
-                      <td className="py-2 px-3 text-right text-[#7E8B76]">{m.income > 0 ? fmt(m.income) : "-"}</td>
+                      <td className="py-2 px-2 font-medium text-[#2D2420]">{fmtMonth(m.month)}</td>
+                      <td className="py-2 px-2 text-right text-[#C05C3B]">{m.chandana_invested > 0 ? fmt(m.chandana_invested) : "-"}</td>
+                      <td className="py-2 px-2 text-right text-[#D19B5A]">{m.akanksha_invested > 0 ? fmt(m.akanksha_invested) : "-"}</td>
+                      <td className="py-2 px-2 text-right text-[#7E8B76]">{m.income > 0 ? fmt(m.income) : "-"}</td>
+                      <td className="py-2 px-2 text-right text-[#7A8B99]">{m.sbi_outgoing > 0 ? fmt(m.sbi_outgoing) : "-"}</td>
+                      <td className={`py-2 px-2 text-right font-medium ${(m.pool || 0) >= 0 ? "text-[#7E8B76]" : "text-[#B85450]"}`}>{fmt(m.pool)}</td>
+                      <td className="py-2 px-2 text-right font-medium text-[#C05C3B]">{fmt(m.chandana_settlement)}</td>
+                      <td className="py-2 px-2 text-right font-medium text-[#D19B5A]">{fmt(m.akanksha_settlement)}</td>
                     </tr>
-                  ))}</tbody>
+                  ))}
+                  {/* Totals row */}
+                  <tr className="bg-[#F7F2EB] font-bold">
+                    <td className="py-2 px-2 text-[#2D2420]">Total</td>
+                    <td className="py-2 px-2 text-right text-[#C05C3B]">{fmt(p?.chandana?.total_invested)}</td>
+                    <td className="py-2 px-2 text-right text-[#D19B5A]">{fmt(p?.akanksha?.total_invested)}</td>
+                    <td className="py-2 px-2 text-right text-[#7E8B76]">{fmt(p?.summary?.total_income_received)}</td>
+                    <td className="py-2 px-2 text-right text-[#7A8B99]">{fmt(p?.summary?.sbi_expenses)}</td>
+                    <td className={`py-2 px-2 text-right ${(p?.summary?.profit_pool || 0) >= 0 ? "text-[#7E8B76]" : "text-[#B85450]"}`}>{fmt(p?.summary?.profit_pool)}</td>
+                    <td className="py-2 px-2 text-right text-[#C05C3B]">{fmt(p?.chandana?.total_gets)}</td>
+                    <td className="py-2 px-2 text-right text-[#D19B5A]">{fmt(p?.akanksha?.total_gets)}</td>
+                  </tr>
+                  </tbody>
                 </table>
               </div>
+
+              {/* Withdrawals note */}
+              {(p?.chandana?.withdrawals > 0 || p?.akanksha?.withdrawals > 0) && (
+                <div className="mt-4 p-3 bg-[#F7F2EB] rounded-xl text-sm">
+                  <p className="font-medium text-[#5C504A] mb-1">Withdrawals from Kshana Account:</p>
+                  {p.chandana.withdrawals > 0 && <p className="text-[#C05C3B]">Chandana withdrew: {fmt(p.chandana.withdrawals)}</p>}
+                  {p.akanksha.withdrawals > 0 && <p className="text-[#D19B5A]">Akanksha withdrew: {fmt(p.akanksha.withdrawals)}</p>}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

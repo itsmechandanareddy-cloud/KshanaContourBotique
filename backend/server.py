@@ -1284,22 +1284,84 @@ async def get_partnership_report(request: Request):
     
     # Monthly breakdown
     monthly = {}
+    all_months = set()
     for e in entries:
-        month = e.get("date", "")[:7]  # YYYY-MM
-        if month not in monthly:
-            monthly[month] = {"month": month, "chandana": 0, "akanksha": 0, "sbi": 0}
-        monthly[month]["chandana"] += e.get("chandana", 0)
-        monthly[month]["akanksha"] += e.get("akanksha", 0)
-        monthly[month]["sbi"] += e.get("sbi", 0)
+        month = e.get("date", "")[:7]
+        if month:
+            all_months.add(month)
+            if month not in monthly:
+                monthly[month] = {"month": month, "chandana_invested": 0, "akanksha_invested": 0, "sbi_outgoing": 0, "income": 0}
+            monthly[month]["chandana_invested"] += e.get("chandana", 0)
+            monthly[month]["akanksha_invested"] += e.get("akanksha", 0)
+            monthly[month]["sbi_outgoing"] += e.get("sbi", 0)
     
     # Monthly income from orders
     for o in all_orders:
         for p in o.get("payments", []):
             pdate = p.get("date", "")[:7]
-            if pdate in monthly:
-                monthly[pdate]["income"] = monthly[pdate].get("income", 0) + p.get("amount", 0)
+            if pdate:
+                all_months.add(pdate)
+                if pdate not in monthly:
+                    monthly[pdate] = {"month": pdate, "chandana_invested": 0, "akanksha_invested": 0, "sbi_outgoing": 0, "income": 0}
+                monthly[pdate]["income"] += p.get("amount", 0)
     
     sorted_monthly = sorted(monthly.values(), key=lambda x: x["month"])
+    
+    # Calculate running settlement per month
+    # Logic: Track cumulative income vs cumulative expenses
+    # First settle investments (return to each partner), then split profit 50/50
+    # Also track Kshana outgoing entries that are tagged as withdrawals
+    running_chandana_invested = 0
+    running_akanksha_invested = 0
+    running_income = 0
+    running_sbi = 0
+    running_chandana_settled = 0
+    running_akanksha_settled = 0
+    
+    # Check Kshana outgoing entries for partner withdrawals
+    # Entries with paid_to containing "Chandana" or "Akanksha" in SBI are withdrawals
+    chandana_withdrawals = 0
+    akanksha_withdrawals = 0
+    for e in entries:
+        if e.get("sbi", 0) > 0:
+            paid_to = (e.get("paid_to", "") or "").lower()
+            reason = (e.get("reason", "") or "").lower()
+            if "chandana" in paid_to or "chandana" in reason:
+                chandana_withdrawals += e.get("sbi", 0)
+            elif "akanksha" in paid_to or "akanksha" in reason or "akankasha" in paid_to:
+                akanksha_withdrawals += e.get("sbi", 0)
+    
+    for m in sorted_monthly:
+        running_chandana_invested += m.get("chandana_invested", 0)
+        running_akanksha_invested += m.get("akanksha_invested", 0)
+        running_income += m.get("income", 0)
+        running_sbi += m.get("sbi_outgoing", 0)
+        
+        # Available pool = total income so far - total SBI expenses so far
+        pool = running_income - running_sbi
+        total_to_return = running_chandana_invested + running_akanksha_invested
+        
+        if pool > 0:
+            if pool >= total_to_return:
+                # Enough to return both investments + split profit
+                remaining = pool - total_to_return
+                m["chandana_settlement"] = running_chandana_invested + remaining / 2
+                m["akanksha_settlement"] = running_akanksha_invested + remaining / 2
+            else:
+                # Partial return proportionally
+                ratio_c = running_chandana_invested / total_to_return if total_to_return > 0 else 0.5
+                ratio_a = running_akanksha_invested / total_to_return if total_to_return > 0 else 0.5
+                m["chandana_settlement"] = pool * ratio_c
+                m["akanksha_settlement"] = pool * ratio_a
+        else:
+            m["chandana_settlement"] = 0
+            m["akanksha_settlement"] = 0
+        
+        m["cumulative_income"] = running_income
+        m["cumulative_sbi"] = running_sbi
+        m["cumulative_chandana"] = running_chandana_invested
+        m["cumulative_akanksha"] = running_akanksha_invested
+        m["pool"] = pool
     
     # Chandana detail entries
     chandana_entries = [e for e in entries if e.get("chandana", 0) > 0]
@@ -1320,12 +1382,9 @@ async def get_partnership_report(request: Request):
     income_payments.sort(key=lambda x: x.get("date", ""), reverse=True)
     
     # Equal split calculation
-    # Total invested: chandana + akanksha
-    # Kshana profit pool = total_order_income - sbi_outgoing
-    # Return investments first, then split remaining
     profit_pool = total_order_income - sbi_total
-    chandana_return = chandana_total  # what chandana should get back
-    akanksha_return = akanksha_total  # what akanksha should get back
+    chandana_return = chandana_total
+    akanksha_return = akanksha_total
     remaining_after_returns = profit_pool - chandana_total - akanksha_total
     equal_share = remaining_after_returns / 2 if remaining_after_returns > 0 else 0
     chandana_gets = chandana_return + equal_share
@@ -1338,7 +1397,8 @@ async def get_partnership_report(request: Request):
             "entry_count": len(chandana_entries),
             "return_amount": chandana_return,
             "profit_share": equal_share,
-            "total_gets": chandana_gets
+            "total_gets": chandana_gets,
+            "withdrawals": chandana_withdrawals
         },
         "akanksha": {
             "total_invested": akanksha_total,
@@ -1346,7 +1406,8 @@ async def get_partnership_report(request: Request):
             "entry_count": len(akanksha_entries),
             "return_amount": akanksha_return,
             "profit_share": equal_share,
-            "total_gets": akanksha_gets
+            "total_gets": akanksha_gets,
+            "withdrawals": akanksha_withdrawals
         },
         "kshana_account": {
             "total_income": total_order_income,

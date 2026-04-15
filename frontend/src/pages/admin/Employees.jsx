@@ -24,6 +24,7 @@ const Employees = () => {
   const [showHoursModal, setShowHoursModal] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
   const [showWorkModal, setShowWorkModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [uploading, setUploading] = useState(false);
 
@@ -63,11 +64,11 @@ const Employees = () => {
   };
 
   const handleDeleteEmployee = async (id) => {
-    if (!window.confirm("Delete this employee?")) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API}/employees/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Employee deleted");
+      setShowDeleteConfirm(null);
       fetchData();
     } catch { toast.error("Failed to delete"); }
   };
@@ -175,7 +176,7 @@ const Employees = () => {
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${roleBg(emp.role)}`}>{roleLabel(emp.role)}</span>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => handleDeleteEmployee(emp.id)} className="text-[#B85450] hover:bg-[#B85450]/10" data-testid={`delete-emp-${emp.id}`}>
+                    <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(emp)} className="text-[#B85450] hover:bg-[#B85450]/10" data-testid={`delete-emp-${emp.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -402,6 +403,18 @@ const Employees = () => {
             ) : <p className="text-center text-sm text-[#8A7D76] py-4">No documents uploaded</p>}
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShowDocsModal(false)} className="rounded-full">Close</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!showDeleteConfirm} onOpenChange={() => setShowDeleteConfirm(null)}>
+        <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4]">
+          <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#B85450]">Delete Employee</DialogTitle></DialogHeader>
+          <p className="text-sm text-[#5C504A] py-4">Are you sure you want to delete <strong>{showDeleteConfirm?.name}</strong>? This action cannot be undone.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(null)} className="rounded-full">Cancel</Button>
+            <Button onClick={() => handleDeleteEmployee(showDeleteConfirm?.id)} className="bg-[#B85450] hover:bg-[#9A4440] text-white rounded-full" data-testid="confirm-delete-emp">Delete</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AdminLayout>
