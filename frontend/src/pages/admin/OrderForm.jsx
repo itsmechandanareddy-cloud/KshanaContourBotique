@@ -426,20 +426,17 @@ const OrderForm = () => {
               </div>
               <div className="space-y-2">
                 <Label className="text-[#5C504A]">Gender</Label>
-                <Select 
-                  value={formData.customer_gender || undefined} 
-                  onValueChange={(value) => handleInputChange("customer_gender", value)}
+                <select
+                  value={formData.customer_gender || ""}
+                  onChange={(e) => handleInputChange("customer_gender", e.target.value)}
                   disabled={isEdit}
+                  className="h-10 w-full px-3 text-sm bg-[#F7F2EB] border-transparent rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C05C3B]/20"
                 >
-                  <SelectTrigger className="bg-[#F7F2EB] border-transparent rounded-xl">
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="">Select gender</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
             </div>
           </CardContent>
