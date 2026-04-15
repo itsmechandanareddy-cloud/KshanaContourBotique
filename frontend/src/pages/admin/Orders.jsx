@@ -37,6 +37,9 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sortBy, setSortBy] = useState("order_id");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
@@ -68,17 +71,37 @@ const Orders = () => {
     let filtered = [...orders];
     
     if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(order => 
-        order.order_id?.toLowerCase().includes(searchLower) ||
-        order.customer_name?.toLowerCase().includes(searchLower) ||
-        order.customer_phone?.includes(search)
+      const s = search.toLowerCase();
+      filtered = filtered.filter(o => 
+        o.order_id?.toLowerCase().includes(s) ||
+        o.customer_name?.toLowerCase().includes(s) ||
+        o.customer_phone?.includes(search)
       );
     }
     
     if (statusFilter !== "all") {
-      filtered = filtered.filter(order => order.status === statusFilter);
+      filtered = filtered.filter(o => o.status === statusFilter);
     }
+
+    if (dateFrom) {
+      filtered = filtered.filter(o => (o.delivery_date || o.order_date || "") >= dateFrom);
+    }
+    if (dateTo) {
+      filtered = filtered.filter(o => (o.delivery_date || o.order_date || "") <= dateTo);
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === "order_id") {
+        const numA = parseInt(a.order_id?.split("-")[1]) || 0;
+        const numB = parseInt(b.order_id?.split("-")[1]) || 0;
+        return numA - numB;
+      }
+      if (sortBy === "newest") return (b.order_date || "").localeCompare(a.order_date || "");
+      if (sortBy === "delivery") return (a.delivery_date || "").localeCompare(b.delivery_date || "");
+      if (sortBy === "amount") return (b.total || 0) - (a.total || 0);
+      return 0;
+    });
     
     setFilteredOrders(filtered);
   };
@@ -197,7 +220,7 @@ const Orders = () => {
           </h1>
           <Button
             onClick={() => navigate("/admin/orders/new")}
-            className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full px-6 shadow-[0_4px_12px_rgba(192,92,59,0.25)]"
+            className="bg-[#2D2420] hover:bg-[#2D2420]/90 text-[#FDFBF7] rounded-none px-6 text-xs uppercase tracking-[0.1em]"
             data-testid="new-order-button"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -206,29 +229,48 @@ const Orders = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8A7D76]" />
-            <Input
-              placeholder="Search by Order ID, Name, or Phone..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 bg-white border-[#EFEBE4] rounded-xl h-12"
-              data-testid="search-orders"
-            />
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D2420]/30" />
+              <Input
+                placeholder="Search by ID, name, or phone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 focus:border-[#2D2420] focus:ring-0"
+                data-testid="search-orders"
+              />
+            </div>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-10 px-3 border-b border-[#2D2420]/15 bg-transparent text-sm focus:outline-none focus:border-[#2D2420]" data-testid="status-filter">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="ready">Ready</option>
+              <option value="delivered">Delivered</option>
+            </select>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+              className="h-10 px-3 border-b border-[#2D2420]/15 bg-transparent text-sm focus:outline-none focus:border-[#2D2420]">
+              <option value="order_id">Sort: Order ID</option>
+              <option value="newest">Sort: Newest First</option>
+              <option value="delivery">Sort: Delivery Date</option>
+              <option value="amount">Sort: Amount</option>
+            </select>
           </div>
-          <select 
-            value={statusFilter} 
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full sm:w-48 h-12 px-4 bg-white border border-[#EFEBE4] rounded-xl text-sm text-[#5C504A] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C05C3B]/20"
-            data-testid="status-filter"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="in_progress">In Progress</option>
-            <option value="ready">Ready</option>
-            <option value="delivered">Delivered</option>
-          </select>
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="flex items-center gap-2 text-xs text-[#2D2420]/40">
+              <span className="uppercase tracking-[0.1em]">Date Range</span>
+              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+                className="h-8 bg-transparent border-b border-[#2D2420]/15 rounded-none px-1 text-xs focus:border-[#2D2420] focus:ring-0 w-32" />
+              <span>to</span>
+              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+                className="h-8 bg-transparent border-b border-[#2D2420]/15 rounded-none px-1 text-xs focus:border-[#2D2420] focus:ring-0 w-32" />
+              {(dateFrom || dateTo) && (
+                <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="text-[#C05C3B] hover:text-[#2D2420] text-xs underline">Clear</button>
+              )}
+            </div>
+            <span className="text-xs text-[#2D2420]/30 ml-auto uppercase tracking-[0.1em]">{filteredOrders.length} of {orders.length} orders</span>
+          </div>
         </div>
 
         {/* Orders List */}

@@ -261,64 +261,64 @@ const Employees = () => {
         )}
       </div>
 
-      {/* Add Employee Modal */}
+      {/* Add/Edit Employee Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4] max-w-lg">
-          <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">{editingEmployee ? "Edit Employee" : "Add Employee"}</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Name *</Label>
-                <Input value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} className="bg-[#F7F2EB] border-transparent rounded-xl" />
+        <DialogContent className="bg-[#FDFBF7] border-[#2D2420]/10 max-w-lg rounded-none" style={{ fontFamily: "'Manrope', sans-serif" }}>
+          <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-2xl text-[#2D2420] font-light">{editingEmployee ? "Edit Employee" : "New Employee"}</DialogTitle></DialogHeader>
+          <div className="space-y-5 py-4">
+            <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Name *</Label>
+                <Input value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 px-0 focus:border-[#2D2420] focus:ring-0" placeholder="Full name" />
               </div>
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Phone *</Label>
-                <Input value={newEmployee.phone} onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} className="bg-[#F7F2EB] border-transparent rounded-xl" />
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Phone *</Label>
+                <Input value={newEmployee.phone} onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 px-0 focus:border-[#2D2420] focus:ring-0" placeholder="Phone number" />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Type *</Label>
+            <div className="grid grid-cols-3 gap-5">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Type *</Label>
                 <select value={newEmployee.role} onChange={(e) => {
                   const role = e.target.value;
                   const defaultPay = role === "worker" ? "hourly" : "weekly";
                   setNewEmployee({ ...newEmployee, role, pay_type: defaultPay });
-                }} className="h-10 w-full px-3 text-sm bg-[#F7F2EB] border-transparent rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C05C3B]/20">
+                }} className="h-10 w-full border-b border-[#2D2420]/15 bg-transparent text-sm focus:outline-none focus:border-[#2D2420]">
                   <option value="master">Master</option>
                   <option value="tailor">Tailor</option>
                   <option value="worker">Worker</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Pay Type</Label>
-                <select value={newEmployee.pay_type} onChange={(e) => setNewEmployee({ ...newEmployee, pay_type: e.target.value })} className="h-10 w-full px-3 text-sm bg-[#F7F2EB] border-transparent rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C05C3B]/20">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Pay Type</Label>
+                <select value={newEmployee.pay_type} onChange={(e) => setNewEmployee({ ...newEmployee, pay_type: e.target.value })} className="h-10 w-full border-b border-[#2D2420]/15 bg-transparent text-sm focus:outline-none focus:border-[#2D2420]">
                   <option value="weekly">Weekly</option>
                   <option value="hourly">Hourly</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Rate ({newEmployee.pay_type === "hourly" ? "/hour" : "/week"})</Label>
-                <Input type="number" value={newEmployee.salary} onChange={(e) => setNewEmployee({ ...newEmployee, salary: parseFloat(e.target.value) || 0 })} className="bg-[#F7F2EB] border-transparent rounded-xl" />
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Rate ({newEmployee.pay_type === "hourly" ? "/hr" : "/wk"})</Label>
+                <Input type="number" value={newEmployee.salary} onChange={(e) => setNewEmployee({ ...newEmployee, salary: parseFloat(e.target.value) || 0 })} className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 px-0 focus:border-[#2D2420] focus:ring-0" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Email</Label>
-                <Input type="email" value={newEmployee.email} onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} className="bg-[#F7F2EB] border-transparent rounded-xl" />
+            <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Email</Label>
+                <Input type="email" value={newEmployee.email} onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 px-0 focus:border-[#2D2420] focus:ring-0" placeholder="Optional" />
               </div>
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Joining Date</Label>
-                <Input type="date" value={newEmployee.joining_date} onChange={(e) => setNewEmployee({ ...newEmployee, joining_date: e.target.value })} className="bg-[#F7F2EB] border-transparent rounded-xl" />
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Joining Date</Label>
+                <Input type="date" value={newEmployee.joining_date} onChange={(e) => setNewEmployee({ ...newEmployee, joining_date: e.target.value })} className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 px-0 focus:border-[#2D2420] focus:ring-0" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-[#5C504A]">Address</Label>
-              <Input value={newEmployee.address} onChange={(e) => setNewEmployee({ ...newEmployee, address: e.target.value })} className="bg-[#F7F2EB] border-transparent rounded-xl" />
+            <div className="space-y-1.5">
+              <Label className="text-[10px] uppercase tracking-[0.15em] text-[#2D2420]/50">Address</Label>
+              <Input value={newEmployee.address} onChange={(e) => setNewEmployee({ ...newEmployee, address: e.target.value })} className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 px-0 focus:border-[#2D2420] focus:ring-0" placeholder="Optional" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddModal(false)} className="rounded-full">Cancel</Button>
-            <Button onClick={handleAddEmployee} className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full">{editingEmployee ? "Update" : "Add Employee"}</Button>
+            <Button variant="outline" onClick={() => setShowAddModal(false)} className="rounded-none border-[#2D2420]/15 text-xs uppercase tracking-[0.1em]">Cancel</Button>
+            <Button onClick={handleAddEmployee} className="bg-[#2D2420] hover:bg-[#2D2420]/90 text-[#FDFBF7] rounded-none text-xs uppercase tracking-[0.1em]">{editingEmployee ? "Update" : "Add Employee"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
