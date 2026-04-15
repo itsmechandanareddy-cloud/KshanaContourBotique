@@ -137,9 +137,19 @@ async def get_current_user(request: Request) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-def generate_order_id():
-    import random
-    return f"KSH-{random.randint(100, 999)}"
+async def generate_order_id():
+    last_order = await db.orders.find_one(
+        {"order_id": {"$regex": "^KSH-"}},
+        {"order_id": 1, "_id": 0},
+        sort=[("_id", -1)]
+    )
+    if last_order:
+        try:
+            last_num = int(last_order["order_id"].split("-")[1])
+            return f"KSH-{str(last_num + 1).zfill(2)}"
+        except:
+            pass
+    return "KSH-01"
 
 # ============== PYDANTIC MODELS ==============
 class AdminLogin(BaseModel):
@@ -384,7 +394,7 @@ async def create_order(data: OrderCreate, request: Request):
     balance = total - data.advance_amount
     
     # Create order
-    order_id = generate_order_id()
+    order_id = await generate_order_id()
     order_doc = {
         "order_id": order_id,
         "customer_id": customer_id,
