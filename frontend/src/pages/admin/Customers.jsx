@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API } from "../../App";
 import AdminLayout from "../../components/AdminLayout";
@@ -7,10 +8,11 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog";
-import { Search, User, Phone, Mail, KeyRound, Trash2, Edit, RotateCcw } from "lucide-react";
+import { Search, User, Phone, Mail, KeyRound, Trash2, Edit, RotateCcw, Eye, ShoppingBag, ArrowRight, IndianRupee } from "lucide-react";
 import { toast } from "sonner";
 
 const Customers = () => {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +20,9 @@ const Customers = () => {
   const [editCustomer, setEditCustomer] = useState(null);
   const [editData, setEditData] = useState({ name: "", phone: "", email: "", gender: "" });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [viewCustomer, setViewCustomer] = useState(null);
+  const [customerOrders, setCustomerOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   useEffect(() => { fetchCustomers(); }, []);
   useEffect(() => {
@@ -33,6 +38,17 @@ const Customers = () => {
       setCustomers(res.data);
     } catch { toast.error("Failed to load customers"); }
     finally { setLoading(false); }
+  };
+
+  const viewOrders = async (customer) => {
+    setViewCustomer(customer);
+    setLoadingOrders(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API}/customers/${customer.id}/orders`, { headers: { Authorization: `Bearer ${token}` } });
+      setCustomerOrders(res.data);
+    } catch { toast.error("Failed to load orders"); setCustomerOrders([]); }
+    finally { setLoadingOrders(false); }
   };
 
   const handleResetPassword = async (customer) => {
@@ -68,6 +84,16 @@ const Customers = () => {
     setEditCustomer(c);
   };
 
+  const fmt = (a) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0 }).format(a || 0);
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-";
+
+  const statusColors = {
+    pending: "bg-[#C05C3B]/10 text-[#C05C3B]",
+    in_progress: "bg-[#D19B5A]/10 text-[#D19B5A]",
+    ready: "bg-[#7E8B76]/10 text-[#7E8B76]",
+    delivered: "bg-[#2D2420]/10 text-[#2D2420]"
+  };
+
   if (loading) return <AdminLayout><div className="flex items-center justify-center h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[#C05C3B] border-t-transparent"></div></div></AdminLayout>;
 
   return (
@@ -78,16 +104,14 @@ const Customers = () => {
           <span className="text-sm text-[#8A7D76]">{customers.length} total</span>
         </div>
 
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D2420]/30" />
           <Input placeholder="Search by name, phone, or email..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-transparent border-b border-[#2D2420]/15 rounded-none h-10 focus:border-[#2D2420] focus:ring-0" data-testid="search-customers" />
         </div>
 
-        <p className="text-xs text-[#8A7D76]">Customer login: <strong>Name</strong> + <strong>Password</strong> (default password is their phone number)</p>
+        <p className="text-xs text-[#8A7D76]">Customer login: <strong>Name</strong> + <strong>Password</strong> (default password is their phone number). Accounts are auto-created when an order is placed.</p>
 
-        {/* Customer List */}
         {filtered.length === 0 ? (
           <Card className="bg-white border-[#EFEBE4]"><CardContent className="p-12 text-center"><p className="text-[#8A7D76]">No customers found</p></CardContent></Card>
         ) : (
@@ -106,6 +130,10 @@ const Customers = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => viewOrders(c)}
+                    className="text-[#7E8B76] hover:bg-[#7E8B76]/10" title="View orders" data-testid={`view-orders-${c.id}`}>
+                    <Eye className="w-4 h-4" />
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={() => handleResetPassword(c)}
                     className="text-[#D19B5A] hover:bg-[#D19B5A]/10" title="Reset password to phone number" data-testid={`reset-pwd-${c.id}`}>
                     <RotateCcw className="w-4 h-4" />
@@ -122,6 +150,67 @@ const Customers = () => {
           </div>
         )}
       </div>
+
+      {/* View Customer Orders Dialog */}
+      <Dialog open={!!viewCustomer} onOpenChange={() => setViewCustomer(null)}>
+        <DialogContent className="bg-[#FDFBF7] border-[#2D2420]/10 max-w-2xl rounded-none" style={{ fontFamily: "'Manrope', sans-serif" }}>
+          <DialogHeader>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl text-[#2D2420] font-light">
+              {viewCustomer?.name}'s Orders
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <div className="flex items-center gap-4 text-xs text-[#8A7D76] mb-4">
+              <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{viewCustomer?.phone}</span>
+              {viewCustomer?.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{viewCustomer?.email}</span>}
+            </div>
+
+            {loadingOrders ? (
+              <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-4 border-[#C05C3B] border-t-transparent"></div></div>
+            ) : customerOrders.length === 0 ? (
+              <div className="text-center py-8">
+                <ShoppingBag className="w-10 h-10 mx-auto text-[#EFEBE4] mb-3" />
+                <p className="text-sm text-[#8A7D76]">No orders yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                {customerOrders.map(order => (
+                  <div key={order.order_id}
+                    className="flex items-center gap-4 p-4 bg-white border border-[#EFEBE4] hover:border-[#D19B5A]/30 transition-colors cursor-pointer group"
+                    onClick={() => { setViewCustomer(null); navigate(`/admin/orders/${order.order_id}`); }}
+                    data-testid={`customer-order-${order.order_id}`}>
+                    <div className="w-10 h-10 bg-[#2D2420] flex items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] text-[#D19B5A] font-medium">{order.order_id?.split("-")[1]}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-[#2D2420]">#{order.order_id}</span>
+                        <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider font-medium ${statusColors[order.status] || "bg-[#F7F2EB] text-[#5C504A]"}`}>
+                          {order.status?.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-[#8A7D76] mt-1">
+                        <span>{order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? "s" : ""}</span>
+                        <span>Placed: {fmtDate(order.created_at)}</span>
+                        <span>Delivery: {fmtDate(order.delivery_date)}</span>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-medium text-[#2D2420]">{fmt(order.total)}</p>
+                      {order.balance > 0 && <p className="text-[10px] text-[#C05C3B]">Due: {fmt(order.balance)}</p>}
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#EFEBE4] group-hover:text-[#D19B5A] transition-colors flex-shrink-0" />
+                  </div>
+                ))}
+                <div className="pt-2 border-t border-[#EFEBE4] flex justify-between text-sm">
+                  <span className="text-[#8A7D76]">{customerOrders.length} order{customerOrders.length !== 1 ? "s" : ""}</span>
+                  <span className="font-medium text-[#2D2420]">Total: {fmt(customerOrders.reduce((s, o) => s + (o.total || 0), 0))}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Customer Modal */}
       <Dialog open={!!editCustomer} onOpenChange={() => setEditCustomer(null)}>

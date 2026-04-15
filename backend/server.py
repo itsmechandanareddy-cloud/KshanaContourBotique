@@ -397,6 +397,14 @@ async def get_customer(customer_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Customer not found")
     return customer
 
+@api_router.get("/customers/{customer_id}/orders")
+async def get_customer_orders(customer_id: str, request: Request):
+    """Get all orders for a specific customer"""
+    await get_current_user(request)
+    orders = await db.orders.find({"customer_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return orders
+
+
 @api_router.put("/customers/{customer_id}/reset-password")
 async def reset_customer_password(customer_id: str, request: Request):
     """Admin resets customer password back to their phone number"""
