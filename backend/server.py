@@ -442,7 +442,7 @@ async def get_orders(request: Request, status: Optional[str] = None):
     if status:
         query["status"] = status
     
-    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    orders = await db.orders.find(query, {"_id": 0}).sort("order_id", 1).to_list(1000)
     return orders
 
 @api_router.get("/orders/{order_id}")
