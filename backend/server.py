@@ -362,9 +362,10 @@ async def logout(response: Response):
 
 # ============== CUSTOMER ENDPOINTS ==============
 @api_router.get("/customers")
-async def get_customers(request: Request):
+async def get_customers(request: Request, page: int = 1, limit: int = 100):
     await get_current_user(request)  # Auth check
-    customers = await db.customers.find({}, {"_id": 1, "name": 1, "phone": 1, "email": 1, "dob": 1, "gender": 1}).to_list(1000)
+    skip = (page - 1) * limit
+    customers = await db.customers.find({}, {"_id": 1, "name": 1, "phone": 1, "email": 1, "dob": 1, "gender": 1}).skip(skip).to_list(limit)
     for c in customers:
         c["id"] = str(c.pop("_id"))
     return customers
@@ -447,7 +448,7 @@ async def create_order(data: OrderCreate, request: Request):
     return {"order_id": order_id, "message": "Order created successfully"}
 
 @api_router.get("/orders")
-async def get_orders(request: Request, status: Optional[str] = None):
+async def get_orders(request: Request, status: Optional[str] = None, page: int = 1, limit: int = 200):
     user = await get_current_user(request)
     
     query = {}
@@ -456,7 +457,8 @@ async def get_orders(request: Request, status: Optional[str] = None):
     if status:
         query["status"] = status
     
-    orders = await db.orders.find(query, {"_id": 0}).sort("order_id", 1).to_list(1000)
+    skip = (page - 1) * limit
+    orders = await db.orders.find(query, {"_id": 0}).sort("order_id", 1).skip(skip).to_list(limit)
     return orders
 
 @api_router.get("/orders/{order_id}")
@@ -675,12 +677,13 @@ async def create_employee(data: EmployeeCreate, request: Request):
     return {"id": str(result.inserted_id), "message": "Employee created"}
 
 @api_router.get("/employees")
-async def get_employees(request: Request):
+async def get_employees(request: Request, page: int = 1, limit: int = 100):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    employees = await db.employees.find({}).to_list(1000)
+    skip = (page - 1) * limit
+    employees = await db.employees.find({}).skip(skip).to_list(limit)
     for e in employees:
         e["id"] = str(e.pop("_id"))
     return employees
@@ -801,7 +804,7 @@ async def get_orders_by_status(status: str, request: Request):
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    orders = await db.orders.find({"status": status}, {"_id": 0}).sort("delivery_date", 1).to_list(1000)
+    orders = await db.orders.find({"status": status}, {"_id": 0}).sort("delivery_date", 1).to_list(500)
     return orders
 
 @api_router.get("/reports/due-soon")
@@ -811,7 +814,7 @@ async def get_due_soon_orders(request: Request):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     now = datetime.now(timezone.utc)
-    all_orders = await db.orders.find({"status": {"$in": ["pending", "in_progress", "ready"]}}, {"_id": 0}).to_list(10000)
+    all_orders = await db.orders.find({"status": {"$in": ["pending", "in_progress", "ready"]}}, {"_id": 0, "delivery_date": 1, "order_id": 1, "customer_name": 1, "status": 1}).to_list(500)
     due_soon = []
     for o in all_orders:
         delivery = o.get("delivery_date", "")
@@ -949,12 +952,13 @@ async def create_material(data: MaterialCreate, request: Request):
     return {"id": str(result.inserted_id), "message": "Material added"}
 
 @api_router.get("/materials")
-async def get_materials(request: Request):
+async def get_materials(request: Request, page: int = 1, limit: int = 200):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    materials = await db.materials.find({}).sort("purchase_date", -1).to_list(1000)
+    skip = (page - 1) * limit
+    materials = await db.materials.find({}).sort("purchase_date", -1).skip(skip).to_list(limit)
     for m in materials:
         m["id"] = str(m.pop("_id"))
     return materials
@@ -1154,8 +1158,8 @@ async def get_dashboard_stats(request: Request):
     start_of_week = now - timedelta(days=now.weekday())
     start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Get all orders
-    all_orders = await db.orders.find({}).to_list(10000)
+    # Get all orders with projection for performance
+    all_orders = await db.orders.find({}, {"_id": 0, "order_id": 1, "status": 1, "total": 1, "balance": 1, "created_at": 1, "delivery_date": 1, "customer_name": 1}).to_list(5000)
     
     # Calculate stats
     monthly_orders = [o for o in all_orders if o.get("created_at", "")[:10] >= start_of_month.isoformat()[:10]]
@@ -1209,9 +1213,7 @@ async def get_chart_data(request: Request):
     now = datetime.now(timezone.utc)
     twelve_months_ago = now - timedelta(days=365)
     
-    all_orders = await db.orders.find({}).to_list(10000)
-    
-    # Group by month
+    all_orders = await db.orders.find({}, {"_id": 0, "created_at": 1, "total": 1, "balance": 1}).to_list(5000)
     monthly_data = {}
     for i in range(12):
         month_date = now - timedelta(days=30*i)
@@ -1236,9 +1238,9 @@ async def get_financial_summary(request: Request):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     now = datetime.now(timezone.utc)
-    all_orders = await db.orders.find({}, {"_id": 0}).to_list(10000)
-    all_employees = await db.employees.find({}).to_list(1000)
-    all_materials = await db.materials.find({}, {"_id": 0}).to_list(10000)
+    all_orders = await db.orders.find({}, {"_id": 0, "total": 1, "balance": 1, "payments": 1, "created_at": 1, "status": 1, "order_id": 1}).to_list(5000)
+    all_employees = await db.employees.find({}, {"payments": 1, "name": 1}).to_list(500)
+    all_materials = await db.materials.find({}, {"_id": 0, "cost": 1, "quantity": 1, "purchase_date": 1, "name": 1, "payment_mode": 1}).to_list(5000)
     
     # === ORDER INCOME ===
     total_order_value = sum(o.get("total", 0) for o in all_orders)
@@ -1359,14 +1361,14 @@ async def get_partnership_report(request: Request):
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    entries = await db.partnership.find({}, {"_id": 0}).to_list(10000)
+    entries = await db.partnership.find({}, {"_id": 0}).to_list(5000)
     
     chandana_total = sum(e.get("chandana", 0) for e in entries)
     akanksha_total = sum(e.get("akanksha", 0) for e in entries)
     sbi_total = sum(e.get("sbi", 0) for e in entries)
     
     # Get all order income (goes to Kshana account)
-    all_orders = await db.orders.find({}, {"_id": 0}).to_list(10000)
+    all_orders = await db.orders.find({}, {"_id": 0, "total": 1, "balance": 1, "payments": 1}).to_list(5000)
     total_order_income = sum(p.get("amount", 0) for o in all_orders for p in o.get("payments", []))
     total_order_value = sum(o.get("total", 0) for o in all_orders)
     total_balance = sum(o.get("balance", 0) for o in all_orders)
@@ -1558,7 +1560,7 @@ async def get_partnership_entries(partner: Optional[str] = None, request: Reques
         query["akanksha"] = {"$gt": 0}
     elif partner == "sbi":
         query["sbi"] = {"$gt": 0}
-    entries = await db.partnership.find(query).sort("date", -1).to_list(10000)
+    entries = await db.partnership.find(query).sort("date", -1).to_list(5000)
     for e in entries:
         e["id"] = str(e.pop("_id"))
     return entries

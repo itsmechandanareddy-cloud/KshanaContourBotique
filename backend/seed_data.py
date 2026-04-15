@@ -11,7 +11,7 @@ import random
 # MongoDB connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
-db = client['kshana_boutique']
+db = client[os.environ.get('DB_NAME', 'kshana_boutique')]
 
 # Sample customers from Excel data
 CUSTOMERS = [
