@@ -48,26 +48,27 @@ const defaultItem = {
 };
 
 const defaultMeasurements = {
-  padded: "no",
-  princess_cut: "no",
-  open_style: "back",
-  length: "",
-  shoulder: "",
-  sleeve_length: "",
-  arm_round: "",
-  bicep: "",
-  upper_chest: "",
-  chest: "",
-  waist: "",
-  point: "",
-  bust_length: "",
-  front_length: "",
-  cross_front: "",
-  back_deep_balance: "",
-  cross_back: "",
-  sleeve_round: "",
-  front_neck: "",
-  back_neck: "",
+  // Blouse
+  blouse_length: "", blouse_shoulder: "", blouse_cross_back: "", blouse_back_deep_balance: "",
+  blouse_upper_chest: "", blouse_chest: "", blouse_waist: "", blouse_arm_round: "",
+  blouse_bicep: "", blouse_sleeve_length: "", blouse_sleeve_round: "", blouse_point: "",
+  blouse_bust_length: "", blouse_front_shoulder: "", blouse_cross_front: "", blouse_front_deep: "",
+  blouse_front_neck: "", blouse_back_neck: "",
+  // Lehenga
+  lehenga_length: "", lehenga_waist: "", lehenga_hip: "",
+  // Kurta Top
+  kurta_length: "", kurta_shoulder: "", kurta_cross_back: "", kurta_back_deep: "",
+  kurta_front_deep: "", kurta_upper_chest: "", kurta_waist: "", kurta_waist_length: "",
+  kurta_slit_open_length: "", kurta_hip_round: "", kurta_sleeve_length: "", kurta_sleeve_round: "",
+  kurta_bicep: "", kurta_cross_front: "", kurta_front_shoulder: "",
+  kurta_front_neck: "", kurta_back_neck: "",
+  // Pant
+  pant_length: "", pant_waist: "", pant_hip_round: "", pant_high_round: "",
+  pant_knee_round: "", pant_bottom: "", pant_new_length: "",
+  // Legacy (keep for backward compat)
+  length: "", shoulder: "", sleeve_length: "", arm_round: "", bicep: "", upper_chest: "",
+  chest: "", waist: "", point: "", bust_length: "", front_length: "", cross_front: "",
+  back_deep_balance: "", cross_back: "", sleeve_round: "", front_neck: "", back_neck: "",
   additional_notes: ""
 };
 
@@ -712,56 +713,127 @@ const OrderForm = () => {
           </CardContent>
         </Card>
 
-        {/* Measurements (Single Section for Order) */}
+        {/* Measurements — Blouse & Kurta Sections */}
         <Card className="bg-white border-[#EFEBE4]">
           <CardHeader>
             <CardTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">
               Measurements
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Body Measurements */}
-            <div>
-              <Label className="text-[#5C504A] text-sm font-semibold mb-3 block">Body Measurements</Label>
+          <CardContent className="space-y-8">
+
+            {/* ===== BLOUSE SECTION ===== */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 border-b border-[#2D2420]/10 pb-2">
+                <span className="text-xs uppercase tracking-[0.15em] font-semibold text-[#C05C3B]">Blouse</span>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {[
-                  { key: "length", label: "Length" }, { key: "shoulder", label: "Shoulder" },
-                  { key: "sleeve_length", label: "Sleeve Length" }, { key: "arm_round", label: "Arm Round" },
-                  { key: "bicep", label: "Bicep" }, { key: "upper_chest", label: "Upper Chest" },
-                  { key: "chest", label: "Chest" }, { key: "waist", label: "Waist" },
-                  { key: "point", label: "Point" }, { key: "bust_length", label: "Bust Length" },
-                  { key: "front_length", label: "Front Length" }, { key: "cross_front", label: "Cross Front" },
-                  { key: "back_deep_balance", label: "Back Deep / Balance" }, { key: "cross_back", label: "Cross Back" },
-                  { key: "sleeve_round", label: "Sleeve Round" },
+                  { key: "blouse_length", label: "Length" }, { key: "blouse_shoulder", label: "Shoulder" },
+                  { key: "blouse_cross_back", label: "Cross Back" }, { key: "blouse_back_deep_balance", label: "Back Deep / Balance" },
+                  { key: "blouse_upper_chest", label: "Upper Chest" }, { key: "blouse_chest", label: "Chest" },
+                  { key: "blouse_waist", label: "Waist" }, { key: "blouse_arm_round", label: "Arm Round" },
+                  { key: "blouse_bicep", label: "Bicep" }, { key: "blouse_sleeve_length", label: "Sleeve Length" },
+                  { key: "blouse_sleeve_round", label: "Sleeve Round" }, { key: "blouse_point", label: "Point" },
+                  { key: "blouse_bust_length", label: "Bust Length" }, { key: "blouse_front_shoulder", label: "Front Shoulder" },
+                  { key: "blouse_cross_front", label: "Cross Front" }, { key: "blouse_front_deep", label: "Front Deep" },
                 ].map(({ key, label }) => (
                   <div key={key} className="space-y-1">
                     <Label className="text-xs text-[#8A7D76]">{label}</Label>
-                    <Input
-                      value={measurements[key] || ""}
-                      onChange={(e) => handleMeasurementChange(key, e.target.value)}
-                      className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10"
-                      placeholder="e.g., 36"
-                      data-testid={`measurement-${key}`}
-                    />
+                    <Input value={measurements[key] || ""} onChange={(e) => handleMeasurementChange(key, e.target.value)}
+                      className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" data-testid={`measurement-${key}`} />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs text-[#8A7D76]">Front Neck</Label>
+                  <Input value={measurements.blouse_front_neck || ""} onChange={(e) => handleMeasurementChange("blouse_front_neck", e.target.value)}
+                    className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-[#8A7D76]">Back Neck</Label>
+                  <Input value={measurements.blouse_back_neck || ""} onChange={(e) => handleMeasurementChange("blouse_back_neck", e.target.value)}
+                    className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" />
+                </div>
+              </div>
+            </div>
+
+            {/* ===== LEHENGA SECTION ===== */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 border-b border-[#2D2420]/10 pb-2">
+                <span className="text-xs uppercase tracking-[0.15em] font-semibold text-[#D19B5A]">Lehenga</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {[
+                  { key: "lehenga_length", label: "Lehenga Length" },
+                  { key: "lehenga_waist", label: "Waist" },
+                  { key: "lehenga_hip", label: "Hip" },
+                ].map(({ key, label }) => (
+                  <div key={key} className="space-y-1">
+                    <Label className="text-xs text-[#8A7D76]">{label}</Label>
+                    <Input value={measurements[key] || ""} onChange={(e) => handleMeasurementChange(key, e.target.value)}
+                      className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" data-testid={`measurement-${key}`} />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Neckline */}
-            <div>
-              <Label className="text-[#5C504A] text-sm font-semibold mb-3 block">Neckline Measurements</Label>
+            {/* ===== KURTA TOP SECTION ===== */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 border-b border-[#2D2420]/10 pb-2">
+                <span className="text-xs uppercase tracking-[0.15em] font-semibold text-[#7E8B76]">Kurta Top</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {[
+                  { key: "kurta_length", label: "Length" }, { key: "kurta_shoulder", label: "Shoulder" },
+                  { key: "kurta_cross_back", label: "Cross Back" }, { key: "kurta_back_deep", label: "Back Deep" },
+                  { key: "kurta_front_deep", label: "Front Deep" }, { key: "kurta_upper_chest", label: "Upper Chest" },
+                  { key: "kurta_waist", label: "Waist" }, { key: "kurta_waist_length", label: "Waist Length" },
+                  { key: "kurta_slit_open_length", label: "Slit Open Length" }, { key: "kurta_hip_round", label: "Hip Round" },
+                  { key: "kurta_sleeve_length", label: "Sleeve Length" }, { key: "kurta_sleeve_round", label: "Sleeve Round" },
+                  { key: "kurta_bicep", label: "Bicep" }, { key: "kurta_cross_front", label: "Cross Front" },
+                  { key: "kurta_front_shoulder", label: "Front Shoulder" },
+                ].map(({ key, label }) => (
+                  <div key={key} className="space-y-1">
+                    <Label className="text-xs text-[#8A7D76]">{label}</Label>
+                    <Input value={measurements[key] || ""} onChange={(e) => handleMeasurementChange(key, e.target.value)}
+                      className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" data-testid={`measurement-${key}`} />
+                  </div>
+                ))}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs text-[#8A7D76]">Front Neck</Label>
-                  <Input value={measurements.front_neck || ""} onChange={(e) => handleMeasurementChange("front_neck", e.target.value)}
-                    className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="e.g., 7" data-testid="measurement-front-neck" />
+                  <Input value={measurements.kurta_front_neck || ""} onChange={(e) => handleMeasurementChange("kurta_front_neck", e.target.value)}
+                    className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-[#8A7D76]">Back Neck</Label>
-                  <Input value={measurements.back_neck || ""} onChange={(e) => handleMeasurementChange("back_neck", e.target.value)}
-                    className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="e.g., 6" data-testid="measurement-back-neck" />
+                  <Input value={measurements.kurta_back_neck || ""} onChange={(e) => handleMeasurementChange("kurta_back_neck", e.target.value)}
+                    className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" />
                 </div>
+              </div>
+            </div>
+
+            {/* ===== PANT SECTION ===== */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 border-b border-[#2D2420]/10 pb-2">
+                <span className="text-xs uppercase tracking-[0.15em] font-semibold text-[#7A8B99]">Pant</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { key: "pant_length", label: "Length" }, { key: "pant_waist", label: "Waist" },
+                  { key: "pant_hip_round", label: "Hip Round" }, { key: "pant_high_round", label: "High Round" },
+                  { key: "pant_knee_round", label: "Knee Round" }, { key: "pant_bottom", label: "Bottom" },
+                  { key: "pant_new_length", label: "New Length" },
+                ].map(({ key, label }) => (
+                  <div key={key} className="space-y-1">
+                    <Label className="text-xs text-[#8A7D76]">{label}</Label>
+                    <Input value={measurements[key] || ""} onChange={(e) => handleMeasurementChange(key, e.target.value)}
+                      className="bg-[#F7F2EB] border-transparent focus:border-[#C05C3B] rounded-lg h-10" placeholder="—" data-testid={`measurement-${key}`} />
+                  </div>
+                ))}
               </div>
             </div>
 
