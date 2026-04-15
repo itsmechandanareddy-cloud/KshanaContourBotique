@@ -418,7 +418,7 @@ const OrderForm = () => {
               <div className="space-y-2">
                 <Label className="text-[#5C504A]">Gender</Label>
                 <Select 
-                  value={formData.customer_gender} 
+                  value={formData.customer_gender || undefined} 
                   onValueChange={(value) => handleInputChange("customer_gender", value)}
                   disabled={isEdit}
                 >
@@ -515,7 +515,7 @@ const OrderForm = () => {
                   <div className="space-y-2 lg:col-span-2">
                     <Label className="text-[#5C504A]">Service Type *</Label>
                     <Select 
-                      value={item.service_type} 
+                      value={item.service_type || undefined} 
                       onValueChange={(value) => handleItemChange(index, "service_type", value)}
                     >
                       <SelectTrigger className="bg-white border-[#EFEBE4] rounded-xl" data-testid={`service-type-${index}`}>

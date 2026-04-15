@@ -16,6 +16,7 @@ import AdminReports from "./pages/admin/Reports";
 import AdminGallery from "./pages/admin/Gallery";
 import AdminReviewsContact from "./pages/admin/ReviewsContact";
 import AdminInvoice from "./pages/admin/Invoice";
+import AdminPartnership from "./pages/admin/Partnership";
 import CustomerHome from "./pages/customer/Home";
 import CustomerOrders from "./pages/customer/MyOrders";
 import CustomerOrderDetail from "./pages/customer/OrderDetail";
@@ -196,6 +197,14 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <AdminInvoice />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/partnership"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminPartnership />
               </ProtectedRoute>
             }
           />

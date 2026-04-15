@@ -1370,6 +1370,85 @@ async def get_partnership_report(request: Request):
         "monthly": sorted_monthly
     }
 
+# ============== PARTNERSHIP CRUD ENDPOINTS ==============
+class PartnershipEntry(BaseModel):
+    date: str
+    order: Optional[str] = "NA"
+    reason: str
+    paid_to: str
+    chandana: float = 0
+    akanksha: float = 0
+    sbi: float = 0
+    mode: str = "UPI"
+    comments: Optional[str] = ""
+
+@api_router.get("/partnership/entries")
+async def get_partnership_entries(partner: Optional[str] = None, request: Request = None):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    query = {}
+    if partner == "chandana":
+        query["chandana"] = {"$gt": 0}
+    elif partner == "akanksha":
+        query["akanksha"] = {"$gt": 0}
+    elif partner == "sbi":
+        query["sbi"] = {"$gt": 0}
+    entries = await db.partnership.find(query).sort("date", -1).to_list(10000)
+    for e in entries:
+        e["id"] = str(e.pop("_id"))
+    return entries
+
+@api_router.post("/partnership/entries")
+async def create_partnership_entry(data: PartnershipEntry, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    doc = data.model_dump()
+    result = await db.partnership.insert_one(doc)
+    return {"id": str(result.inserted_id), "message": "Entry added"}
+
+@api_router.put("/partnership/entries/{entry_id}")
+async def update_partnership_entry(entry_id: str, data: PartnershipEntry, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    result = await db.partnership.update_one({"_id": ObjectId(entry_id)}, {"$set": data.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    return {"message": "Entry updated"}
+
+@api_router.delete("/partnership/entries/{entry_id}")
+async def delete_partnership_entry(entry_id: str, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    result = await db.partnership.delete_one({"_id": ObjectId(entry_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    return {"message": "Entry deleted"}
+
+# ============== MATERIALS EDIT/DELETE ==============
+@api_router.put("/materials/{material_id}")
+async def update_material(material_id: str, data: MaterialCreate, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    result = await db.materials.update_one({"_id": ObjectId(material_id)}, {"$set": data.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Material not found")
+    return {"message": "Material updated"}
+
+@api_router.delete("/materials/{material_id}")
+async def delete_material(material_id: str, request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    result = await db.materials.delete_one({"_id": ObjectId(material_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Material not found")
+    return {"message": "Material deleted"}
+
 # ============== ROOT ENDPOINT ==============
 @api_router.get("/")
 async def root():

@@ -7,7 +7,7 @@ import { Button } from "../../components/ui/button";
 import {
   ShoppingBag, IndianRupee, AlertTriangle, Eye,
   Package, CheckCircle, Clock, Users, Boxes,
-  Calendar, TrendingUp, ArrowDownLeft, ArrowUpRight, Handshake
+  Calendar, TrendingUp, ArrowDownLeft, ArrowUpRight
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -20,7 +20,6 @@ const Reports = () => {
   const [stats, setStats] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [financial, setFinancial] = useState(null);
-  const [partnership, setPartnership] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeModal, setActiveModal] = useState(null);
   const [modalData, setModalData] = useState([]);
@@ -32,13 +31,12 @@ const Reports = () => {
     try {
       const token = localStorage.getItem("token");
       const h = { Authorization: `Bearer ${token}` };
-      const [sR, cR, fR, pR] = await Promise.all([
+      const [sR, cR, fR] = await Promise.all([
         axios.get(`${API}/dashboard/stats`, { headers: h }),
         axios.get(`${API}/dashboard/charts`, { headers: h }),
-        axios.get(`${API}/reports/financial-summary`, { headers: h }),
-        axios.get(`${API}/reports/partnership`, { headers: h })
+        axios.get(`${API}/reports/financial-summary`, { headers: h })
       ]);
-      setStats(sR.data); setChartData(cR.data); setFinancial(fR.data); setPartnership(pR.data);
+      setStats(sR.data); setChartData(cR.data); setFinancial(fR.data);
     } catch { toast.error("Failed to load reports"); }
     finally { setLoading(false); }
   };
@@ -65,7 +63,6 @@ const Reports = () => {
   if (loading) return <AdminLayout><div className="flex items-center justify-center h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[#C05C3B] border-t-transparent"></div></div></AdminLayout>;
 
   const f = financial;
-  const p = partnership;
 
   return (
     <AdminLayout>
@@ -107,88 +104,6 @@ const Reports = () => {
           <Card className={`border-[#EFEBE4] cursor-pointer hover:shadow-md transition-shadow ${stats?.due_soon_count > 0 ? "bg-[#B85450]/10" : "bg-white"}`} onClick={viewDueSoon}>
             <CardContent className="p-6"><div className="flex items-center justify-between"><div className="flex items-center gap-4"><AlertTriangle className={`w-10 h-10 ${stats?.due_soon_count > 0 ? "text-[#B85450]" : "text-[#D4A373]"}`} /><div><p className="text-sm text-[#8A7D76]">Due Soon</p><p className={`text-2xl font-semibold ${stats?.due_soon_count > 0 ? "text-[#B85450]" : "text-[#2D2420]"}`}>{stats?.due_soon_count || 0}</p></div></div><Eye className="w-5 h-5 text-[#8A7D76]" /></div></CardContent>
           </Card>
-        </div>
-
-        {/* ===== PARTNERSHIP SECTION ===== */}
-        <div className="border-t-2 border-[#EFEBE4] pt-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Handshake className="w-8 h-8 text-[#C05C3B]" />
-            <h2 className="font-['Cormorant_Garamond'] text-3xl font-medium text-[#2D2420]">Partnership</h2>
-          </div>
-
-          {/* Partner Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Card className="bg-gradient-to-br from-[#C05C3B] to-[#A84C2F] text-white">
-              <CardContent className="p-6 space-y-3">
-                <p className="text-lg font-semibold">Chandana</p>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between"><span className="text-white/80">Invested</span><span className="font-semibold">{fmt(p?.chandana?.total_invested)}</span></div>
-                  <div className="flex justify-between"><span className="text-white/80">Profit Share</span><span className="font-semibold">{fmt(p?.chandana?.profit_share)}</span></div>
-                  <div className="flex justify-between border-t border-white/20 pt-2 mt-2"><span className="text-white/80">Total Gets</span><span className="text-xl font-bold">{fmt(p?.chandana?.total_gets)}</span></div>
-                </div>
-                <Button size="sm" onClick={() => setActiveModal("chandana")} className="w-full bg-white/20 hover:bg-white/30 text-white rounded-full mt-2" data-testid="view-chandana"><Eye className="w-4 h-4 mr-1" />View Details</Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-[#D19B5A] to-[#B8854A] text-white">
-              <CardContent className="p-6 space-y-3">
-                <p className="text-lg font-semibold">Akanksha</p>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between"><span className="text-white/80">Invested</span><span className="font-semibold">{fmt(p?.akanksha?.total_invested)}</span></div>
-                  <div className="flex justify-between"><span className="text-white/80">Profit Share</span><span className="font-semibold">{fmt(p?.akanksha?.profit_share)}</span></div>
-                  <div className="flex justify-between border-t border-white/20 pt-2 mt-2"><span className="text-white/80">Total Gets</span><span className="text-xl font-bold">{fmt(p?.akanksha?.total_gets)}</span></div>
-                </div>
-                <Button size="sm" onClick={() => setActiveModal("akanksha")} className="w-full bg-white/20 hover:bg-white/30 text-white rounded-full mt-2" data-testid="view-akanksha"><Eye className="w-4 h-4 mr-1" />View Details</Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-[#7A8B99] to-[#637382] text-white">
-              <CardContent className="p-6 space-y-3">
-                <p className="text-lg font-semibold">Kshana Account</p>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between"><span className="text-white/80">Total Income</span><span className="font-semibold">{fmt(p?.kshana_account?.total_income)}</span></div>
-                  <div className="flex justify-between"><span className="text-white/80">SBI Outgoing</span><span className="font-semibold">{fmt(p?.kshana_account?.total_sbi_outgoing)}</span></div>
-                  <div className="flex justify-between border-t border-white/20 pt-2 mt-2"><span className="text-white/80">Balance</span><span className="text-xl font-bold">{fmt(p?.kshana_account?.balance)}</span></div>
-                </div>
-                <Button size="sm" onClick={() => setActiveModal("kshana")} className="w-full bg-white/20 hover:bg-white/30 text-white rounded-full mt-2" data-testid="view-kshana"><Eye className="w-4 h-4 mr-1" />View Details</Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Partnership Summary */}
-          <Card className="bg-white border-[#EFEBE4] mb-6">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-[#F7F2EB] rounded-xl"><p className="text-xs text-[#8A7D76]">Total Invested</p><p className="font-bold text-[#2D2420]">{fmt(p?.summary?.total_invested)}</p></div>
-                <div className="text-center p-4 bg-[#7E8B76]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">Income Received</p><p className="font-bold text-[#7E8B76]">{fmt(p?.summary?.total_income_received)}</p></div>
-                <div className="text-center p-4 bg-[#7A8B99]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">SBI Expenses</p><p className="font-bold text-[#7A8B99]">{fmt(p?.summary?.sbi_expenses)}</p></div>
-                <div className={`text-center p-4 rounded-xl ${(p?.summary?.remaining_after_returns || 0) >= 0 ? "bg-[#7E8B76]/10" : "bg-[#B85450]/10"}`}><p className="text-xs text-[#8A7D76]">Profit to Split</p><p className={`font-bold ${(p?.summary?.remaining_after_returns || 0) >= 0 ? "text-[#7E8B76]" : "text-[#B85450]"}`}>{fmt(p?.summary?.remaining_after_returns)}</p></div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Monthly Breakdown */}
-          {p?.monthly?.length > 0 && (
-            <Card className="bg-white border-[#EFEBE4]">
-              <CardHeader><CardTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">Monthly Breakdown</CardTitle></CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead><tr className="bg-[#F7F2EB]"><th className="py-2 px-3 text-left text-[#5C504A]">Month</th><th className="py-2 px-3 text-right text-[#5C504A]">Chandana</th><th className="py-2 px-3 text-right text-[#5C504A]">Akanksha</th><th className="py-2 px-3 text-right text-[#5C504A]">Kshana (SBI)</th><th className="py-2 px-3 text-right text-[#5C504A]">Income</th></tr></thead>
-                    <tbody>{p.monthly.map((m, i) => (
-                      <tr key={i} className="border-b border-[#EFEBE4]">
-                        <td className="py-2 px-3 font-medium text-[#2D2420]">{fmtMonth(m.month)}</td>
-                        <td className="py-2 px-3 text-right text-[#C05C3B]">{m.chandana > 0 ? fmt(m.chandana) : "-"}</td>
-                        <td className="py-2 px-3 text-right text-[#D19B5A]">{m.akanksha > 0 ? fmt(m.akanksha) : "-"}</td>
-                        <td className="py-2 px-3 text-right text-[#7A8B99]">{m.sbi > 0 ? fmt(m.sbi) : "-"}</td>
-                        <td className="py-2 px-3 text-right text-[#7E8B76]">{m.income > 0 ? fmt(m.income) : "-"}</td>
-                      </tr>
-                    ))}</tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Charts */}
@@ -251,65 +166,6 @@ const Reports = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Chandana Detail */}
-      <Dialog open={activeModal === "chandana"} onOpenChange={() => setActiveModal(null)}>
-        <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4] max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#C05C3B]">Chandana — Investment Details</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-3 bg-[#C05C3B]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">Total Invested</p><p className="font-bold text-[#C05C3B]">{fmt(p?.chandana?.total_invested)}</p></div>
-              <div className="text-center p-3 bg-[#7E8B76]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">Profit Share</p><p className="font-bold text-[#7E8B76]">{fmt(p?.chandana?.profit_share)}</p></div>
-              <div className="text-center p-3 bg-[#F7F2EB] rounded-xl"><p className="text-xs text-[#8A7D76]">Total Gets</p><p className="font-bold text-[#2D2420]">{fmt(p?.chandana?.total_gets)}</p></div>
-            </div>
-            <h3 className="text-sm font-bold text-[#5C504A]">All Transactions ({p?.chandana?.entry_count})</h3>
-            <div className="space-y-1">{p?.chandana?.entries?.map((e,i)=>(
-              <div key={i} className="flex justify-between p-3 bg-white rounded-xl border border-[#EFEBE4] text-sm"><div className="min-w-0 flex-1"><p className="font-medium text-[#2D2420]">{e.reason}</p><div className="text-xs text-[#8A7D76] mt-0.5">{fmtDate(e.date)} | To: {e.paid_to} | <span className="capitalize">{e.mode}</span>{e.order !== "NA" && <span> | Order #{e.order}</span>}{e.comments && <span> | {e.comments}</span>}</div></div><span className="font-semibold text-[#C05C3B] ml-3 whitespace-nowrap">{fmt(e.chandana)}</span></div>
-            ))}</div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Akanksha Detail */}
-      <Dialog open={activeModal === "akanksha"} onOpenChange={() => setActiveModal(null)}>
-        <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4] max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#D19B5A]">Akanksha — Investment Details</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-3 bg-[#D19B5A]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">Total Invested</p><p className="font-bold text-[#D19B5A]">{fmt(p?.akanksha?.total_invested)}</p></div>
-              <div className="text-center p-3 bg-[#7E8B76]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">Profit Share</p><p className="font-bold text-[#7E8B76]">{fmt(p?.akanksha?.profit_share)}</p></div>
-              <div className="text-center p-3 bg-[#F7F2EB] rounded-xl"><p className="text-xs text-[#8A7D76]">Total Gets</p><p className="font-bold text-[#2D2420]">{fmt(p?.akanksha?.total_gets)}</p></div>
-            </div>
-            <h3 className="text-sm font-bold text-[#5C504A]">All Transactions ({p?.akanksha?.entry_count})</h3>
-            <div className="space-y-1">{p?.akanksha?.entries?.map((e,i)=>(
-              <div key={i} className="flex justify-between p-3 bg-white rounded-xl border border-[#EFEBE4] text-sm"><div className="min-w-0 flex-1"><p className="font-medium text-[#2D2420]">{e.reason}</p><div className="text-xs text-[#8A7D76] mt-0.5">{fmtDate(e.date)} | To: {e.paid_to} | <span className="capitalize">{e.mode}</span>{e.order !== "NA" && <span> | Order #{e.order}</span>}{e.comments && <span> | {e.comments}</span>}</div></div><span className="font-semibold text-[#D19B5A] ml-3 whitespace-nowrap">{fmt(e.akanksha)}</span></div>
-            ))}</div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Kshana Account Detail */}
-      <Dialog open={activeModal === "kshana"} onOpenChange={() => setActiveModal(null)}>
-        <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4] max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#7A8B99]">Kshana Account Details</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-3 bg-[#7E8B76]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">Income</p><p className="font-bold text-[#7E8B76]">{fmt(p?.kshana_account?.total_income)}</p></div>
-              <div className="text-center p-3 bg-[#B85450]/10 rounded-xl"><p className="text-xs text-[#8A7D76]">SBI Outgoing</p><p className="font-bold text-[#B85450]">{fmt(p?.kshana_account?.total_sbi_outgoing)}</p></div>
-              <div className="text-center p-3 bg-[#F7F2EB] rounded-xl"><p className="text-xs text-[#8A7D76]">Balance</p><p className="font-bold text-[#2D2420]">{fmt(p?.kshana_account?.balance)}</p></div>
-            </div>
-
-            <h3 className="text-sm font-bold text-[#7E8B76]">Incoming Payments (from orders)</h3>
-            <div className="space-y-1 max-h-48 overflow-y-auto">{p?.kshana_account?.income_payments?.map((e,i)=>(
-              <div key={i} className="flex justify-between p-2 bg-white rounded-lg border border-[#EFEBE4] text-xs"><div><span className="font-medium">#{e.order_id}</span> <span className="text-[#8A7D76]">{e.customer_name}</span> <span className="text-[#8A7D76]">{fmtDate(e.date)}</span> <span className="capitalize px-1 bg-[#F7F2EB] rounded">{e.mode}</span></div><span className="font-semibold text-[#7E8B76]">{fmt(e.amount)}</span></div>
-            ))}</div>
-
-            <h3 className="text-sm font-bold text-[#B85450]">SBI Account Outgoing</h3>
-            <div className="space-y-1 max-h-48 overflow-y-auto">{p?.kshana_account?.sbi_entries?.map((e,i)=>(
-              <div key={i} className="flex justify-between p-2 bg-white rounded-lg border border-[#EFEBE4] text-xs"><div><span className="font-medium">{e.reason}</span> <span className="text-[#8A7D76]">To: {e.paid_to}</span> <span className="text-[#8A7D76]">{fmtDate(e.date)}</span> <span className="capitalize px-1 bg-[#F7F2EB] rounded">{e.mode}</span></div><span className="font-semibold text-[#B85450]">{fmt(e.sbi)}</span></div>
-            ))}</div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </AdminLayout>
   );
 };

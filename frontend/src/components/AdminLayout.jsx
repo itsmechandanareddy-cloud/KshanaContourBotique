@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../App";
 import { 
   LayoutDashboard, ShoppingBag, Users, Package, 
-  BarChart3, Image, Star, LogOut, Menu, X, Scissors
+  BarChart3, Image, Star, LogOut, Menu, X, Scissors, Handshake
 } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -15,6 +15,7 @@ const navItems = [
   { path: "/admin/employees", icon: Users, label: "Employees" },
   { path: "/admin/materials", icon: Package, label: "Materials" },
   { path: "/admin/reports", icon: BarChart3, label: "Reports" },
+  { path: "/admin/partnership", icon: Handshake, label: "Partnership" },
   { path: "/admin/gallery", icon: Image, label: "Gallery" },
   { path: "/admin/reviews", icon: Star, label: "Reviews & Contact" },
 ];

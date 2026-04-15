@@ -319,7 +319,7 @@ const Employees = () => {
             <div className="space-y-2"><Label>Date *</Label><Input type="date" value={newHours.date} onChange={(e) => setNewHours({ ...newHours, date: e.target.value })} className="bg-[#F7F2EB] border-transparent rounded-xl" /></div>
             <div className="space-y-2"><Label>Hours *</Label><Input type="number" step="0.5" value={newHours.hours} onChange={(e) => setNewHours({ ...newHours, hours: parseFloat(e.target.value) || 0 })} className="bg-[#F7F2EB] border-transparent rounded-xl" /></div>
             <div className="space-y-2"><Label>Order (optional)</Label>
-              <Select value={newHours.order_id} onValueChange={(v) => setNewHours({ ...newHours, order_id: v })}>
+              <Select value={newHours.order_id || undefined} onValueChange={(v) => setNewHours({ ...newHours, order_id: v })}>
                 <SelectTrigger className="bg-[#F7F2EB] border-transparent rounded-xl"><SelectValue placeholder="Select order" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="general">General Work</SelectItem>
@@ -342,7 +342,7 @@ const Employees = () => {
           <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">Assign Work - {selectedEmployee?.name}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2"><Label>Order *</Label>
-              <Select value={newWork.order_id} onValueChange={(v) => setNewWork({ ...newWork, order_id: v })}>
+              <Select value={newWork.order_id || undefined} onValueChange={(v) => setNewWork({ ...newWork, order_id: v })}>
                 <SelectTrigger className="bg-[#F7F2EB] border-transparent rounded-xl"><SelectValue placeholder="Select order" /></SelectTrigger>
                 <SelectContent>
                   {orders.map(o => <SelectItem key={o.order_id} value={o.order_id}>#{o.order_id} - {o.customer_name}</SelectItem>)}

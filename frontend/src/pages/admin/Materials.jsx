@@ -8,7 +8,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog";
-import { Plus, Package, Calendar, IndianRupee, User } from "lucide-react";
+import { Plus, Package, Calendar, IndianRupee, User, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const PAYMENT_MODES = ["cash", "upi", "card", "bank_transfer"];
@@ -18,6 +18,7 @@ const Materials = () => {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editMaterial, setEditMaterial] = useState(null);
   
   const [newMaterial, setNewMaterial] = useState({
     name: "", description: "", quantity: 0, unit: "meters",
@@ -50,19 +51,50 @@ const Materials = () => {
     
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API}/materials`, newMaterial, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success("Material added");
+      if (editMaterial) {
+        await axios.put(`${API}/materials/${editMaterial.id}`, newMaterial, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success("Material updated");
+      } else {
+        await axios.post(`${API}/materials`, newMaterial, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success("Material added");
+      }
       setShowAddModal(false);
+      setEditMaterial(null);
       setNewMaterial({
         name: "", description: "", quantity: 0, unit: "meters",
         cost: 0, purchase_date: "", payment_mode: "cash", supplier: ""
       });
       fetchMaterials();
     } catch (error) {
-      toast.error("Failed to add material");
+      toast.error("Failed to save material");
     }
+  };
+
+  const handleEditMaterial = (mat) => {
+    setNewMaterial({
+      name: mat.name || "", description: mat.description || "",
+      quantity: mat.quantity || 0, unit: mat.unit || "meters",
+      cost: mat.cost || 0, purchase_date: mat.purchase_date || "",
+      payment_mode: mat.payment_mode || "cash", supplier: mat.supplier || ""
+    });
+    setEditMaterial(mat);
+    setShowAddModal(true);
+  };
+
+  const handleDeleteMaterial = async (id) => {
+    if (!window.confirm("Delete this material?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API}/materials/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Material deleted");
+      fetchMaterials();
+    } catch { toast.error("Failed to delete"); }
   };
 
   const formatCurrency = (amount) => {
@@ -97,7 +129,7 @@ const Materials = () => {
             Raw Materials
           </h1>
           <Button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => { setEditMaterial(null); setNewMaterial({ name: "", description: "", quantity: 0, unit: "meters", cost: 0, purchase_date: "", payment_mode: "cash", supplier: "" }); setShowAddModal(true); }}
             className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full px-6"
             data-testid="add-material-button"
           >
@@ -126,6 +158,7 @@ const Materials = () => {
                       <th className="text-left py-4 px-6">Purchase Date</th>
                       <th className="text-left py-4 px-6">Payment</th>
                       <th className="text-left py-4 px-6">Supplier</th>
+                      <th className="text-left py-4 px-6">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -155,6 +188,12 @@ const Materials = () => {
                         </td>
                         <td className="py-4 px-6 text-[#5C504A]">
                           {material.supplier || "-"}
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditMaterial(material)} className="text-[#5C504A] hover:text-[#C05C3B] p-1"><Edit className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(material.id)} className="text-[#B85450] p-1"><Trash2 className="w-4 h-4" /></Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -212,7 +251,7 @@ const Materials = () => {
         <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4] max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">
-              Add Material
+              {editMaterial ? "Edit Material" : "Add Material"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -314,7 +353,7 @@ const Materials = () => {
               Cancel
             </Button>
             <Button onClick={handleAddMaterial} className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full">
-              Add Material
+              {editMaterial ? "Update" : "Add Material"}
             </Button>
           </DialogFooter>
         </DialogContent>
