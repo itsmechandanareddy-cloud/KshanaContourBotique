@@ -172,6 +172,9 @@ class CustomerCreate(BaseModel):
 class MeasurementItem(BaseModel):
     service_type: str
     blouse_type: Optional[str] = None
+    padded: Optional[str] = None
+    princess_cut: Optional[str] = None
+    open_style: Optional[str] = None
     front_neck_design: Optional[str] = None
     back_neck_design: Optional[str] = None
     additional_notes: Optional[str] = None

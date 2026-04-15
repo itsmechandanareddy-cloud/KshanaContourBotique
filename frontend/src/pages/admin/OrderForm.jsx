@@ -39,6 +39,9 @@ const PAYMENT_MODES = ["cash", "upi", "card", "bank_transfer"];
 const defaultItem = {
   service_type: "",
   blouse_type: "without_cups",
+  padded: "no",
+  princess_cut: "no",
+  open_style: "back",
   front_neck_design: "",
   back_neck_design: "",
   additional_notes: "",
@@ -565,6 +568,31 @@ const OrderForm = () => {
                   </div>
                 )}
 
+                {/* Garment Options - Per Item */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[#5C504A]">Padded</Label>
+                    <RadioGroup value={item.padded || "no"} onValueChange={(v) => handleItemChange(index, "padded", v)} className="flex gap-6">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id={`pad-y-${index}`} /><Label htmlFor={`pad-y-${index}`} className="font-normal">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="no" id={`pad-n-${index}`} /><Label htmlFor={`pad-n-${index}`} className="font-normal">No</Label></div>
+                    </RadioGroup>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#5C504A]">Princess Cut</Label>
+                    <RadioGroup value={item.princess_cut || "no"} onValueChange={(v) => handleItemChange(index, "princess_cut", v)} className="flex gap-6">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id={`pc-y-${index}`} /><Label htmlFor={`pc-y-${index}`} className="font-normal">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="no" id={`pc-n-${index}`} /><Label htmlFor={`pc-n-${index}`} className="font-normal">No</Label></div>
+                    </RadioGroup>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#5C504A]">Open</Label>
+                    <RadioGroup value={item.open_style || "back"} onValueChange={(v) => handleItemChange(index, "open_style", v)} className="flex gap-6">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="front" id={`op-f-${index}`} /><Label htmlFor={`op-f-${index}`} className="font-normal">Front</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="back" id={`op-b-${index}`} /><Label htmlFor={`op-b-${index}`} className="font-normal">Back</Label></div>
+                    </RadioGroup>
+                  </div>
+                </div>
+
                 {/* Neck Designs with Reference Images */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -579,9 +607,22 @@ const OrderForm = () => {
                     {isEdit && (
                       <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
                         <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
-                        <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Add front neck reference"}</span>
+                        <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Upload front neck reference"}</span>
                         <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `front_neck_${index}`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
                       </label>
+                    )}
+                    {/* Show front neck images */}
+                    {isEdit && orderImages.filter(img => img.image_type === `front_neck_${index}`).length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        {orderImages.filter(img => img.image_type === `front_neck_${index}`).map((img) => (
+                          <div key={img.id} className="group relative w-16 h-16 rounded-lg overflow-hidden bg-[#F7F2EB]">
+                            <img src={getImageUrl(img)} alt="Front neck ref" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button size="icon" variant="destructive" onClick={() => handleDeleteImage(img.id)} className="rounded-full w-6 h-6 bg-[#B85450]/90"><X className="w-3 h-3" /></Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -596,9 +637,22 @@ const OrderForm = () => {
                     {isEdit && (
                       <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
                         <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
-                        <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Add back neck reference"}</span>
+                        <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Upload back neck reference"}</span>
                         <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `back_neck_${index}`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
                       </label>
+                    )}
+                    {/* Show back neck images */}
+                    {isEdit && orderImages.filter(img => img.image_type === `back_neck_${index}`).length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        {orderImages.filter(img => img.image_type === `back_neck_${index}`).map((img) => (
+                          <div key={img.id} className="group relative w-16 h-16 rounded-lg overflow-hidden bg-[#F7F2EB]">
+                            <img src={getImageUrl(img)} alt="Back neck ref" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button size="icon" variant="destructive" onClick={() => handleDeleteImage(img.id)} className="rounded-full w-6 h-6 bg-[#B85450]/90"><X className="w-3 h-3" /></Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -654,43 +708,6 @@ const OrderForm = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Garment Options */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Padded</Label>
-                <RadioGroup value={measurements.padded || "no"} onValueChange={(v) => handleMeasurementChange("padded", v)} className="flex gap-6">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="m-padded-yes" /><Label htmlFor="m-padded-yes" className="font-normal">Yes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="m-padded-no" /><Label htmlFor="m-padded-no" className="font-normal">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Princess Cut</Label>
-                <RadioGroup value={measurements.princess_cut || "no"} onValueChange={(v) => handleMeasurementChange("princess_cut", v)} className="flex gap-6">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="m-princess-yes" /><Label htmlFor="m-princess-yes" className="font-normal">Yes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="m-princess-no" /><Label htmlFor="m-princess-no" className="font-normal">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[#5C504A]">Open</Label>
-                <RadioGroup value={measurements.open_style || "back"} onValueChange={(v) => handleMeasurementChange("open_style", v)} className="flex gap-6">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="front" id="m-open-front" /><Label htmlFor="m-open-front" className="font-normal">Front</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="back" id="m-open-back" /><Label htmlFor="m-open-back" className="font-normal">Back</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            </div>
-
             {/* Body Measurements */}
             <div>
               <Label className="text-[#5C504A] text-sm font-semibold mb-3 block">Body Measurements</Label>

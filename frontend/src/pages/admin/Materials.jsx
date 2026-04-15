@@ -341,8 +341,3 @@ const Materials = () => {
 };
 
 export default Materials;
-AdminLayout>
-  );
-};
-
-export default Materials;
