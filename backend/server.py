@@ -1249,6 +1249,127 @@ async def get_financial_summary(request: Request):
         }
     }
 
+# ============== PARTNERSHIP ENDPOINTS ==============
+@api_router.get("/reports/partnership")
+async def get_partnership_report(request: Request):
+    user = await get_current_user(request)
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    entries = await db.partnership.find({}, {"_id": 0}).to_list(10000)
+    
+    chandana_total = sum(e.get("chandana", 0) for e in entries)
+    akanksha_total = sum(e.get("akanksha", 0) for e in entries)
+    sbi_total = sum(e.get("sbi", 0) for e in entries)
+    
+    # Get all order income (goes to Kshana account)
+    all_orders = await db.orders.find({}, {"_id": 0}).to_list(10000)
+    total_order_income = sum(p.get("amount", 0) for o in all_orders for p in o.get("payments", []))
+    total_order_value = sum(o.get("total", 0) for o in all_orders)
+    total_balance = sum(o.get("balance", 0) for o in all_orders)
+    
+    # Kshana account: income - sbi outgoing
+    kshana_balance = total_order_income - sbi_total
+    
+    # Total business expenses = personal investments + sbi payments
+    total_expenses = chandana_total + akanksha_total + sbi_total
+    
+    # Profit = total income - total expenses
+    profit = total_order_income - sbi_total  # SBI expenses from business account
+    # Net after returning investments
+    net_after_investments = profit  # this is what's left in business after SBI expenses
+    # But both partners also invested personally, so total investment = chandana + akanksha
+    # Profit to split = income - all expenses (sbi + employee pay from orders etc already in sbi)
+    # Simple: profit = kshana_balance (income - sbi_outgoing)
+    
+    # Monthly breakdown
+    monthly = {}
+    for e in entries:
+        month = e.get("date", "")[:7]  # YYYY-MM
+        if month not in monthly:
+            monthly[month] = {"month": month, "chandana": 0, "akanksha": 0, "sbi": 0}
+        monthly[month]["chandana"] += e.get("chandana", 0)
+        monthly[month]["akanksha"] += e.get("akanksha", 0)
+        monthly[month]["sbi"] += e.get("sbi", 0)
+    
+    # Monthly income from orders
+    for o in all_orders:
+        for p in o.get("payments", []):
+            pdate = p.get("date", "")[:7]
+            if pdate in monthly:
+                monthly[pdate]["income"] = monthly[pdate].get("income", 0) + p.get("amount", 0)
+    
+    sorted_monthly = sorted(monthly.values(), key=lambda x: x["month"])
+    
+    # Chandana detail entries
+    chandana_entries = [e for e in entries if e.get("chandana", 0) > 0]
+    akanksha_entries = [e for e in entries if e.get("akanksha", 0) > 0]
+    sbi_entries = [e for e in entries if e.get("sbi", 0) > 0]
+    
+    # Income payments for kshana account
+    income_payments = []
+    for o in all_orders:
+        for p in o.get("payments", []):
+            income_payments.append({
+                "order_id": o.get("order_id"),
+                "customer_name": o.get("customer_name"),
+                "amount": p.get("amount", 0),
+                "date": p.get("date", ""),
+                "mode": p.get("mode", "")
+            })
+    income_payments.sort(key=lambda x: x.get("date", ""), reverse=True)
+    
+    # Equal split calculation
+    # Total invested: chandana + akanksha
+    # Kshana profit pool = total_order_income - sbi_outgoing
+    # Return investments first, then split remaining
+    profit_pool = total_order_income - sbi_total
+    chandana_return = chandana_total  # what chandana should get back
+    akanksha_return = akanksha_total  # what akanksha should get back
+    remaining_after_returns = profit_pool - chandana_total - akanksha_total
+    equal_share = remaining_after_returns / 2 if remaining_after_returns > 0 else 0
+    chandana_gets = chandana_return + equal_share
+    akanksha_gets = akanksha_return + equal_share
+    
+    return {
+        "chandana": {
+            "total_invested": chandana_total,
+            "entries": chandana_entries,
+            "entry_count": len(chandana_entries),
+            "return_amount": chandana_return,
+            "profit_share": equal_share,
+            "total_gets": chandana_gets
+        },
+        "akanksha": {
+            "total_invested": akanksha_total,
+            "entries": akanksha_entries,
+            "entry_count": len(akanksha_entries),
+            "return_amount": akanksha_return,
+            "profit_share": equal_share,
+            "total_gets": akanksha_gets
+        },
+        "kshana_account": {
+            "total_income": total_order_income,
+            "total_sbi_outgoing": sbi_total,
+            "balance": kshana_balance,
+            "sbi_entries": sbi_entries,
+            "income_payments": income_payments
+        },
+        "summary": {
+            "total_order_value": total_order_value,
+            "total_income_received": total_order_income,
+            "total_balance_due": total_balance,
+            "chandana_invested": chandana_total,
+            "akanksha_invested": akanksha_total,
+            "total_invested": chandana_total + akanksha_total,
+            "sbi_expenses": sbi_total,
+            "profit_pool": profit_pool,
+            "remaining_after_returns": remaining_after_returns,
+            "equal_share_each": equal_share
+        },
+        "monthly": sorted_monthly
+    }
+
 # ============== ROOT ENDPOINT ==============
 @api_router.get("/")
 async def root():
