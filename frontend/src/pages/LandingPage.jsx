@@ -1,21 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { 
   Phone, Mail, MapPin, Instagram, MessageCircle, 
-  User, ShieldCheck, ChevronDown, Star, Scissors
+  User, ShieldCheck, Star, Scissors, ArrowRight
 } from "lucide-react";
 
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/5x4gmkkq_image.png";
 const SKETCH_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/a4jq30f0_image.png";
+const ABOUT_IMG = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/sybd095l_image.png";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [galleryImages, setGalleryImages] = useState([]);
 
-  // Gallery images from Kshana Contour boutique
   const defaultGallery = [
     { id: 1, image_url: "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/7lsyatwt_image.png", title: "Red Bridal Blouse" },
     { id: 2, image_url: "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/wo33jc1d_WhatsApp%20Image%202026-04-14%20at%2012.30.24%20PM.jpeg", title: "Traditional Zari Work" },
@@ -31,368 +30,225 @@ const LandingPage = () => {
     "Men's Wear", "Kids Wear", "Custom Alterations"
   ];
 
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]">
+    <div className="min-h-screen bg-[#FDFBF7]" style={{ fontFamily: "'Manrope', sans-serif" }}>
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-[#FDFBF7]/95 backdrop-blur-md z-50 border-b border-[#EFEBE4]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={LOGO_URL} alt="Kshana Contour" className="h-12 w-12 rounded-lg object-cover" />
+      <nav className="fixed top-0 left-0 right-0 bg-[#FDFBF7]/90 backdrop-blur-sm z-50 border-b border-[#2D2420]/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img src={LOGO_URL} alt="Kshana Contour" className="h-10 w-10 object-cover" />
+            <span className="font-['Cormorant_Garamond'] text-xl font-light text-[#2D2420] hidden sm:block tracking-wide">Kshana Contour</span>
           </div>
-          <div className="hidden md:flex items-center gap-8">
-            <button 
-              onClick={() => scrollToSection("about")}
-              className="text-[#5C504A] hover:text-[#C05C3B] transition-colors font-medium"
-            >
-              About Us
-            </button>
-            <button 
-              onClick={() => scrollToSection("gallery")}
-              className="text-[#5C504A] hover:text-[#C05C3B] transition-colors font-medium"
-            >
-              Gallery
-            </button>
-            <button 
-              onClick={() => scrollToSection("services")}
-              className="text-[#5C504A] hover:text-[#C05C3B] transition-colors font-medium"
-            >
-              Services
-            </button>
-            <button 
-              onClick={() => scrollToSection("contact")}
-              className="text-[#5C504A] hover:text-[#C05C3B] transition-colors font-medium"
-            >
-              Contact
-            </button>
+          <div className="hidden md:flex items-center gap-10">
+            {["about", "gallery", "services", "contact"].map((s) => (
+              <button key={s} onClick={() => scrollTo(s)}
+                className="text-xs uppercase tracking-[0.2em] text-[#2D2420]/60 hover:text-[#2D2420] transition-colors duration-300">
+                {s}
+              </button>
+            ))}
           </div>
-          <Button
-            onClick={() => setShowLoginModal(true)}
-            className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full px-6 shadow-[0_4px_12px_rgba(192,92,59,0.25)]"
-            data-testid="login-button"
-          >
-            <User className="w-4 h-4 mr-2" />
+          <Button onClick={() => setShowLoginModal(true)}
+            className="bg-[#2D2420] hover:bg-[#2D2420]/90 text-[#FDFBF7] rounded-none px-6 py-2 text-xs uppercase tracking-[0.15em] transition-all duration-300"
+            data-testid="login-button">
             Login
           </Button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
-          <div className="lg:w-1/2 text-center lg:text-left">
-            <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-6xl lg:text-7xl font-light text-[#2D2420] leading-tight">
-              Kshana Contour
+      {/* Hero */}
+      <section className="pt-28 pb-0 min-h-screen flex items-center">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full grid lg:grid-cols-2 gap-16 items-center">
+          <div className="space-y-8 py-20 lg:py-32">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A]">Bespoke Tailoring</p>
+            <h1 className="font-['Cormorant_Garamond'] text-6xl md:text-7xl lg:text-8xl font-light text-[#2D2420] leading-[0.9]">
+              Kshana<br />Contour
             </h1>
-            <p className="mt-4 text-lg tracking-[0.3em] text-[#8C3B24] font-medium">
-              CLASSY. AESTHETIC. ELEGANT
-            </p>
-            <p className="mt-6 text-lg text-[#5C504A] max-w-xl">
+            <div className="w-16 h-px bg-[#D19B5A]" />
+            <p className="text-base text-[#2D2420]/60 max-w-md leading-relaxed">
               Where tradition meets contemporary elegance. We craft bespoke garments 
-              with precision and passion, bringing your vision to life stitch by stitch.
+              with precision and passion, bringing your vision to life.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button
-                onClick={() => scrollToSection("contact")}
-                className="bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full px-8 py-6 text-base shadow-[0_4px_12px_rgba(192,92,59,0.25)]"
-                data-testid="contact-us-btn"
-              >
-                Contact Us
+            <div className="flex gap-4 pt-4">
+              <Button onClick={() => scrollTo("contact")}
+                className="bg-[#2D2420] hover:bg-[#2D2420]/90 text-[#FDFBF7] rounded-none px-8 py-6 text-xs uppercase tracking-[0.15em]"
+                data-testid="contact-us-btn">
+                Get in Touch <ArrowRight className="w-4 h-4 ml-2" strokeWidth={1.5} />
               </Button>
-              <Button
-                onClick={() => scrollToSection("gallery")}
-                variant="outline"
-                className="border-[#EFEBE4] text-[#2D2420] hover:border-[#C05C3B] hover:text-[#C05C3B] rounded-full px-8 py-6 text-base"
-                data-testid="view-gallery-btn"
-              >
-                View Gallery
+              <Button onClick={() => scrollTo("gallery")} variant="outline"
+                className="border-[#2D2420]/20 text-[#2D2420] hover:border-[#2D2420] rounded-none px-8 py-6 text-xs uppercase tracking-[0.15em]"
+                data-testid="view-gallery-btn">
+                Our Work
               </Button>
             </div>
           </div>
-          <div className="lg:w-1/2 flex justify-center">
+          <div className="relative hidden lg:block">
+            <div className="absolute top-8 right-8 w-[85%] h-[90%] border border-[#D19B5A]/20" />
+            <img src={SKETCH_URL} alt="Fashion Sketch"
+              className="relative w-full max-w-lg object-contain" />
+          </div>
+        </div>
+      </section>
+
+      {/* About */}
+      <section id="about" className="border-t border-[#2D2420]/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <div className="relative">
-              <div className="absolute -inset-4 bg-[#D19B5A]/20 rounded-full blur-3xl" />
-              <img 
-                src={SKETCH_URL} 
-                alt="Kshana Contour Fashion" 
-                className="relative w-80 h-80 object-contain"
-              />
+              <div className="absolute -top-4 -left-4 w-full h-full border border-[#D19B5A]/15" />
+              <img src={ABOUT_IMG} alt="Kshana Contour Boutique"
+                className="relative w-full object-cover aspect-[4/5]" />
             </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-16 flex justify-center">
-          <button 
-            onClick={() => scrollToSection("about")}
-            className="animate-bounce text-[#8A7D76]"
-          >
-            <ChevronDown className="w-8 h-8" />
-          </button>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="py-20 px-6 bg-[#F7F2EB]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8C3B24] mb-4">
-              About Us
-            </p>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-[#2D2420] font-medium">
-              Crafting Dreams, One Stitch at a Time
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <img 
-                src="https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/sybd095l_image.png"
-                alt="Kshana Contour Boutique"
-                className="rounded-2xl shadow-[0_8px_32px_-8px_rgba(139,102,85,0.15)] w-full object-cover"
-              />
-            </div>
-            <div className="space-y-6">
-              <p className="text-lg text-[#5C504A] leading-relaxed">
-                Welcome to <strong className="text-[#2D2420]">Kshana Contour</strong>, 
-                your destination for exquisite tailoring and bespoke fashion. With years 
-                of experience in crafting beautiful garments, we specialize in creating 
-                pieces that blend traditional craftsmanship with modern aesthetics.
+            <div className="space-y-8">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A]">Our Story</p>
+              <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light text-[#2D2420] leading-tight">
+                Crafting Dreams,<br />One Stitch at a Time
+              </h2>
+              <div className="w-12 h-px bg-[#2D2420]/20" />
+              <p className="text-[#2D2420]/60 leading-relaxed">
+                Welcome to <span className="text-[#2D2420] font-medium">Kshana Contour</span>, 
+                your destination for exquisite tailoring and bespoke fashion. From bridal blouses 
+                that make your special day unforgettable to everyday alterations that ensure the 
+                perfect fit, our artisans pour their heart into every creation.
               </p>
-              <p className="text-lg text-[#5C504A] leading-relaxed">
-                From bridal blouses that make your special day unforgettable to everyday 
-                alterations that ensure the perfect fit, our skilled artisans pour their 
-                heart into every creation. We believe that clothing is more than fabric – 
-                it's an expression of your unique personality.
-              </p>
-              <div className="flex items-center gap-4 pt-4">
-                <div className="text-center">
-                  <p className="font-['Cormorant_Garamond'] text-4xl font-medium text-[#C05C3B]">500+</p>
-                  <p className="text-sm text-[#8A7D76]">Happy Clients</p>
-                </div>
-                <div className="w-px h-16 bg-[#EFEBE4]" />
-                <div className="text-center">
-                  <p className="font-['Cormorant_Garamond'] text-4xl font-medium text-[#C05C3B]">10+</p>
-                  <p className="text-sm text-[#8A7D76]">Years Experience</p>
-                </div>
-                <div className="w-px h-16 bg-[#EFEBE4]" />
-                <div className="text-center">
-                  <p className="font-['Cormorant_Garamond'] text-4xl font-medium text-[#C05C3B]">15+</p>
-                  <p className="text-sm text-[#8A7D76]">Services</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section id="services" className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8C3B24] mb-4">
-              Our Services
-            </p>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-[#2D2420] font-medium">
-              What We Offer
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {services.map((service, index) => (
-              <div 
-                key={index}
-                className="bg-white border border-[#EFEBE4] rounded-2xl p-6 text-center card-hover shadow-[0_4px_24px_-8px_rgba(139,102,85,0.08)]"
-              >
-                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[#C05C3B]/10 flex items-center justify-center">
-                  <Scissors className="w-6 h-6 text-[#C05C3B]" strokeWidth={1.5} />
-                </div>
-                <h3 className="font-medium text-[#2D2420]">{service}</h3>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery Section */}
-      <section id="gallery" className="py-20 px-6 bg-[#F7F2EB]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8C3B24] mb-4">
-              Our Work
-            </p>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-[#2D2420] font-medium">
-              Gallery
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {defaultGallery.map((item) => (
-              <div 
-                key={item.id}
-                className="group relative aspect-square overflow-hidden rounded-2xl"
-              >
-                <img 
-                  src={item.image_url}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#2D2420]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                  <p className="text-white font-medium">{item.title}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8C3B24] mb-4">
-              Testimonials
-            </p>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-[#2D2420] font-medium">
-              What Our Clients Say
-            </h2>
-          </div>
-          <div className="flex justify-center">
-            <a 
-              href="https://maps.app.goo.gl/c7z46uTDaKbCNvNr9"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 bg-white border border-[#EFEBE4] rounded-2xl px-8 py-6 shadow-[0_4px_24px_-8px_rgba(139,102,85,0.08)] hover:shadow-[0_8px_32px_-8px_rgba(139,102,85,0.15)] transition-all"
-              data-testid="google-reviews-link"
-            >
-              <div className="flex -space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              <div className="flex items-center gap-12 pt-6">
+                {[["500+", "Clients"], ["10+", "Years"], ["15+", "Services"]].map(([n, l]) => (
+                  <div key={l}>
+                    <p className="font-['Cormorant_Garamond'] text-4xl font-light text-[#2D2420]">{n}</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[#2D2420]/40 mt-1">{l}</p>
+                  </div>
                 ))}
               </div>
-              <span className="text-[#5C504A]">View our Google Reviews</span>
-            </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20 px-6 bg-[#2D2420] text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#D19B5A] mb-4">
-              Get in Touch
-            </p>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-medium">
-              Contact Us
-            </h2>
+      {/* Services */}
+      <section id="services" className="border-t border-[#2D2420]/10 bg-[#2D2420]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
+          <div className="text-center mb-20">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A] mb-6">What We Offer</p>
+            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light text-[#FDFBF7]">Our Services</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <a 
-              href="tel:+919187202605"
-              className="flex flex-col items-center p-8 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
-              data-testid="phone-contact"
-            >
-              <Phone className="w-8 h-8 text-[#D19B5A] mb-4" />
-              <p className="text-lg font-medium">Call Us</p>
-              <p className="text-white/70 mt-2">9187202605</p>
-              <p className="text-white/70">9108253760</p>
-            </a>
-            <a 
-              href="mailto:kshanaconture@gmail.com"
-              className="flex flex-col items-center p-8 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
-              data-testid="email-contact"
-            >
-              <Mail className="w-8 h-8 text-[#D19B5A] mb-4" />
-              <p className="text-lg font-medium">Email Us</p>
-              <p className="text-white/70 mt-2">kshanaconture@gmail.com</p>
-            </a>
-            <a 
-              href="https://maps.app.goo.gl/c7z46uTDaKbCNvNr9"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-8 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
-              data-testid="location-contact"
-            >
-              <MapPin className="w-8 h-8 text-[#D19B5A] mb-4" />
-              <p className="text-lg font-medium">Visit Us</p>
-              <p className="text-white/70 mt-2 text-center">View on Google Maps</p>
-            </a>
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-px bg-white/10">
+            {services.map((service, i) => (
+              <div key={i} className="bg-[#2D2420] p-8 lg:p-12 text-center group hover:bg-[#3D3430] transition-colors duration-500">
+                <Scissors className="w-5 h-5 text-[#D19B5A] mx-auto mb-4 group-hover:rotate-45 transition-transform duration-500" strokeWidth={1.5} />
+                <h3 className="font-['Cormorant_Garamond'] text-lg text-[#FDFBF7] font-light">{service}</h3>
+              </div>
+            ))}
           </div>
-          <div className="mt-12 flex justify-center gap-6">
-            <a 
-              href="https://wa.me/919187202605"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-full hover:bg-[#20BD5A] transition-colors"
-              data-testid="whatsapp-link"
-            >
-              <MessageCircle className="w-5 h-5" />
-              WhatsApp
+        </div>
+      </section>
+
+      {/* Gallery */}
+      <section id="gallery" className="border-t border-[#2D2420]/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
+          <div className="flex items-end justify-between mb-16">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A] mb-4">Portfolio</p>
+              <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light text-[#2D2420]">Our Work</h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {defaultGallery.map((item) => (
+              <div key={item.id} className="group relative aspect-[3/4] overflow-hidden">
+                <img src={item.image_url} alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-[#2D2420]/0 group-hover:bg-[#2D2420]/40 transition-all duration-500 flex items-end">
+                  <div className="p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                    <p className="text-[#FDFBF7] text-sm font-light tracking-wide">{item.title}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="border-t border-[#2D2420]/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 text-center">
+          <a href="https://maps.app.goo.gl/c7z46uTDaKbCNvNr9" target="_blank" rel="noopener noreferrer"
+            className="inline-flex flex-col items-center gap-4 group" data-testid="google-reviews-link">
+            <div className="flex gap-1">
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-[#D19B5A] fill-[#D19B5A]" />)}
+            </div>
+            <p className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2D2420]">Loved by our clients</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#2D2420]/40 group-hover:text-[#D19B5A] transition-colors">View Google Reviews</p>
+          </a>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" className="border-t border-[#2D2420]/10 bg-[#2D2420]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
+          <div className="text-center mb-20">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A] mb-6">Get in Touch</p>
+            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light text-[#FDFBF7]">Contact Us</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-px bg-white/10">
+            {[
+              { href: "tel:+919187202605", icon: Phone, title: "Call", detail: ["9187202605", "9108253760"] },
+              { href: "mailto:kshanaconture@gmail.com", icon: Mail, title: "Email", detail: ["kshanaconture@gmail.com"] },
+              { href: "https://maps.app.goo.gl/c7z46uTDaKbCNvNr9", icon: MapPin, title: "Visit", detail: ["View on Google Maps"] },
+            ].map(({ href, icon: Icon, title, detail }) => (
+              <a key={title} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+                className="bg-[#2D2420] p-10 text-center hover:bg-[#3D3430] transition-colors duration-300" data-testid={`${title.toLowerCase()}-contact`}>
+                <Icon className="w-6 h-6 text-[#D19B5A] mx-auto mb-4" strokeWidth={1.5} />
+                <p className="text-xs uppercase tracking-[0.2em] text-[#FDFBF7]/40 mb-3">{title}</p>
+                {detail.map((d, i) => <p key={i} className="text-[#FDFBF7]/70 text-sm">{d}</p>)}
+              </a>
+            ))}
+          </div>
+          <div className="mt-16 flex justify-center gap-4">
+            <a href="https://wa.me/919187202605" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-[#FDFBF7]/20 text-[#FDFBF7] px-6 py-3 rounded-none hover:bg-[#FDFBF7] hover:text-[#2D2420] transition-all duration-300 text-xs uppercase tracking-[0.15em]"
+              data-testid="whatsapp-link">
+              <MessageCircle className="w-4 h-4" strokeWidth={1.5} />WhatsApp
             </a>
-            <a 
-              href="https://www.instagram.com/kshana_contour"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full hover:opacity-90 transition-opacity"
-              data-testid="instagram-link"
-            >
-              <Instagram className="w-5 h-5" />
-              Instagram
+            <a href="https://www.instagram.com/kshana_contour" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-[#FDFBF7]/20 text-[#FDFBF7] px-6 py-3 rounded-none hover:bg-[#FDFBF7] hover:text-[#2D2420] transition-all duration-300 text-xs uppercase tracking-[0.15em]"
+              data-testid="instagram-link">
+              <Instagram className="w-4 h-4" strokeWidth={1.5} />Instagram
             </a>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 bg-[#1A1614] text-white/60 text-center">
-        <p>&copy; 2024 Kshana Contour. All rights reserved.</p>
+      <footer className="py-8 px-6 bg-[#1A1614] text-center">
+        <p className="text-xs uppercase tracking-[0.2em] text-[#FDFBF7]/30">&copy; 2026 Kshana Contour. All rights reserved.</p>
       </footer>
 
-      {/* WhatsApp Floating Button */}
-      <a
-        href="https://wa.me/919187202605"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="whatsapp-float"
-        data-testid="whatsapp-float"
-      >
+      {/* WhatsApp Float */}
+      <a href="https://wa.me/919187202605" target="_blank" rel="noopener noreferrer"
+        className="whatsapp-float" data-testid="whatsapp-float">
         <MessageCircle className="w-7 h-7" />
       </a>
 
       {/* Login Modal */}
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
-        <DialogContent className="sm:max-w-md bg-[#FDFBF7] border-[#EFEBE4]">
+        <DialogContent className="sm:max-w-md bg-[#FDFBF7] border-[#2D2420]/10 rounded-none">
           <DialogHeader>
-            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl text-center text-[#2D2420]">
-              Choose Your Portal
+            <DialogTitle className="font-['Cormorant_Garamond'] text-3xl text-center text-[#2D2420] font-light">
+              Welcome
             </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-6">
-            <Button
-              onClick={() => {
-                setShowLoginModal(false);
-                navigate("/login");
-              }}
-              className="h-20 bg-white border-2 border-[#EFEBE4] hover:border-[#C05C3B] hover:bg-[#F7F2EB] text-[#2D2420] rounded-2xl flex flex-col items-center justify-center gap-2 transition-all"
-              data-testid="customer-portal-btn"
-            >
-              <User className="w-6 h-6 text-[#C05C3B]" />
-              <span className="font-medium">Customer Portal</span>
-              <span className="text-xs text-[#8A7D76]">View your orders & measurements</span>
+          <div className="grid gap-3 py-6">
+            <Button onClick={() => { setShowLoginModal(false); navigate("/login"); }}
+              className="h-20 bg-[#FDFBF7] border border-[#2D2420]/10 hover:border-[#2D2420] text-[#2D2420] rounded-none flex flex-col items-center justify-center gap-2 transition-all duration-300"
+              data-testid="customer-portal-btn">
+              <User className="w-5 h-5 text-[#D19B5A]" strokeWidth={1.5} />
+              <span className="text-xs uppercase tracking-[0.15em]">Customer Portal</span>
             </Button>
-            <Button
-              onClick={() => {
-                setShowLoginModal(false);
-                navigate("/admin/login");
-              }}
-              className="h-20 bg-white border-2 border-[#EFEBE4] hover:border-[#C05C3B] hover:bg-[#F7F2EB] text-[#2D2420] rounded-2xl flex flex-col items-center justify-center gap-2 transition-all"
-              data-testid="admin-portal-btn"
-            >
-              <ShieldCheck className="w-6 h-6 text-[#C05C3B]" />
-              <span className="font-medium">Admin Portal</span>
-              <span className="text-xs text-[#8A7D76]">Manage orders & business</span>
+            <Button onClick={() => { setShowLoginModal(false); navigate("/admin/login"); }}
+              className="h-20 bg-[#FDFBF7] border border-[#2D2420]/10 hover:border-[#2D2420] text-[#2D2420] rounded-none flex flex-col items-center justify-center gap-2 transition-all duration-300"
+              data-testid="admin-portal-btn">
+              <ShieldCheck className="w-5 h-5 text-[#D19B5A]" strokeWidth={1.5} />
+              <span className="text-xs uppercase tracking-[0.15em]">Admin Portal</span>
             </Button>
           </div>
         </DialogContent>
