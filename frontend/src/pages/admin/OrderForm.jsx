@@ -604,15 +604,13 @@ const OrderForm = () => {
                       rows={2}
                       placeholder="Describe front neck design..."
                     />
-                    {isEdit && (
-                      <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
-                        <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
-                        <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Upload front neck reference"}</span>
-                        <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `front_neck_${index}`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
-                      </label>
-                    )}
+                    <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
+                      <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
+                      <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Upload front neck reference"}</span>
+                      <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `front_neck_${index}`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
+                    </label>
                     {/* Show front neck images */}
-                    {isEdit && orderImages.filter(img => img.image_type === `front_neck_${index}`).length > 0 && (
+                    {orderImages.filter(img => img.image_type === `front_neck_${index}`).length > 0 && (
                       <div className="flex gap-2 flex-wrap">
                         {orderImages.filter(img => img.image_type === `front_neck_${index}`).map((img) => (
                           <div key={img.id} className="group relative w-16 h-16 rounded-lg overflow-hidden bg-[#F7F2EB]">
@@ -634,15 +632,13 @@ const OrderForm = () => {
                       rows={2}
                       placeholder="Describe back neck design..."
                     />
-                    {isEdit && (
-                      <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
-                        <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
-                        <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Upload back neck reference"}</span>
-                        <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `back_neck_${index}`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
-                      </label>
-                    )}
+                    <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
+                      <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
+                      <span className="text-[#5C504A]">{uploadingImage ? "Uploading..." : "Upload back neck reference"}</span>
+                      <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `back_neck_${index}`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
+                    </label>
                     {/* Show back neck images */}
-                    {isEdit && orderImages.filter(img => img.image_type === `back_neck_${index}`).length > 0 && (
+                    {orderImages.filter(img => img.image_type === `back_neck_${index}`).length > 0 && (
                       <div className="flex gap-2 flex-wrap">
                         {orderImages.filter(img => img.image_type === `back_neck_${index}`).map((img) => (
                           <div key={img.id} className="group relative w-16 h-16 rounded-lg overflow-hidden bg-[#F7F2EB]">
@@ -658,17 +654,16 @@ const OrderForm = () => {
                 </div>
 
                 {/* Item Reference Images */}
-                {isEdit && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-[#5C504A]">Reference Images</Label>
-                      <label className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
-                        <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
-                        <span className="text-[#5C504A]">{uploadingImage ? "..." : "Upload"}</span>
-                        <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `item_${index}_ref`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
-                      </label>
-                    </div>
-                    {orderImages.filter(img => img.image_type?.startsWith(`item_${index}`) || img.image_type?.includes(`_${index}`)).length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[#5C504A]">Reference Images</Label>
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-[#C05C3B]/30 rounded-lg cursor-pointer hover:bg-[#C05C3B]/5 transition-colors text-xs">
+                      <Upload className="w-3.5 h-3.5 text-[#C05C3B]" />
+                      <span className="text-[#5C504A]">{uploadingImage ? "..." : "Upload"}</span>
+                      <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, `item_${index}_ref`)} accept=".jpg,.jpeg,.png,.webp" disabled={uploadingImage} />
+                    </label>
+                  </div>
+                  {orderImages.filter(img => img.image_type?.startsWith(`item_${index}`) || img.image_type?.includes(`_${index}`)).length > 0 && (
                       <div className="grid grid-cols-3 gap-2">
                         {orderImages.filter(img => img.image_type?.startsWith(`item_${index}`) || img.image_type?.includes(`_${index}`)).map((img) => (
                           <div key={img.id} className="group relative aspect-square rounded-lg overflow-hidden bg-[#F7F2EB]">
@@ -681,7 +676,6 @@ const OrderForm = () => {
                       </div>
                     )}
                   </div>
-                )}
 
                 {/* Description */}
                 <div className="space-y-2">
