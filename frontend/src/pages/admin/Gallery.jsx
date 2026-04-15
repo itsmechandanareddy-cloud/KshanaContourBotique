@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { API } from "../../App";
 import AdminLayout from "../../components/AdminLayout";
@@ -17,10 +17,10 @@ const Gallery = () => {
   const [uploading, setUploading] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    fetchGallery();
-  }, []);
+  useEffect(() => { fetchGallery(); }, []);
 
   const fetchGallery = async () => {
     try {
@@ -31,6 +31,14 @@ const Gallery = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileSelect = () => {
+    if (!newTitle.trim()) {
+      toast.error("Please enter a title first");
+      return;
+    }
+    fileInputRef.current?.click();
   };
 
   const handleUploadImage = async (e) => {
@@ -45,8 +53,8 @@ const Gallery = () => {
       formData.append("file", file);
       formData.append("title", newTitle);
       formData.append("category", newCategory);
-      
-      const resp = await axios.post(`${API}/gallery/upload`, formData, {
+
+      await axios.post(`${API}/gallery/upload`, formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
       });
       toast.success("Image uploaded to gallery");
@@ -58,18 +66,18 @@ const Gallery = () => {
       toast.error("Failed to upload image");
     } finally {
       setUploading(false);
-      e.target.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const handleDeleteItem = async (id) => {
-    if (!window.confirm("Delete this image from gallery?")) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API}/gallery/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("Image deleted");
+      setDeleteConfirm(null);
       fetchGallery();
     } catch (error) {
       toast.error("Failed to delete image");
@@ -116,12 +124,16 @@ const Gallery = () => {
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="%23F7F2EB" width="400" height="400"/><text x="50%" y="50%" text-anchor="middle" fill="%238A7D76" font-size="14">Image</text></svg>'; }}
                 />
-                {/* Always-visible delete button */}
-                <Button size="icon" variant="destructive" onClick={() => handleDeleteItem(item.id)}
-                  className="absolute top-3 right-3 bg-[#2D2420]/60 hover:bg-[#B85450] rounded-full w-8 h-8 z-10"
-                  data-testid={`delete-gallery-${item.id}`}>
+                {/* Delete button - large touch target for mobile */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteConfirm(item); }}
+                  className="absolute top-2 right-2 bg-[#2D2420]/70 hover:bg-[#B85450] active:bg-[#B85450] rounded-full w-10 h-10 flex items-center justify-center z-20 touch-manipulation"
+                  data-testid={`delete-gallery-${item.id}`}
+                  style={{ WebkitTapHighlightColor: "transparent" }}
+                >
                   <Trash2 className="w-4 h-4 text-white" />
-                </Button>
+                </button>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2D2420]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <p className="text-white font-medium truncate">{item.title}</p>
@@ -134,6 +146,25 @@ const Gallery = () => {
         )}
       </div>
 
+      {/* Delete Confirmation Dialog (replaces window.confirm for mobile) */}
+      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4] max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#B85450]">Delete Image</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-[#5C504A] py-2">
+            Are you sure you want to delete <strong>{deleteConfirm?.title}</strong> from the gallery?
+          </p>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)} className="rounded-full flex-1">Cancel</Button>
+            <Button onClick={() => handleDeleteItem(deleteConfirm?.id)} className="bg-[#B85450] hover:bg-[#9A4440] text-white rounded-full flex-1" data-testid="confirm-gallery-delete">
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4]">
           <DialogHeader>
@@ -150,11 +181,28 @@ const Gallery = () => {
             </div>
             <div className="space-y-2">
               <Label className="text-[#5C504A]">Image File *</Label>
-              <label className="flex items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-[#C05C3B]/30 rounded-xl cursor-pointer hover:bg-[#C05C3B]/5 transition-colors">
+              {/* Hidden file input with ref */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleUploadImage}
+                disabled={uploading}
+                accept="image/*"
+                data-testid="gallery-file-input"
+              />
+              {/* Explicit button to trigger file picker */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFileSelect}
+                disabled={uploading}
+                className="w-full h-24 border-2 border-dashed border-[#C05C3B]/30 rounded-xl hover:bg-[#C05C3B]/5 flex flex-col items-center justify-center gap-2"
+                data-testid="gallery-upload-trigger"
+              >
                 <Upload className="w-6 h-6 text-[#C05C3B]" />
-                <span className="text-sm text-[#5C504A]">{uploading ? "Uploading..." : "Click to select image"}</span>
-                <input type="file" className="hidden" onChange={handleUploadImage} disabled={uploading} accept=".jpg,.jpeg,.png,.gif,.webp" data-testid="gallery-file-input" />
-              </label>
+                <span className="text-sm text-[#5C504A]">{uploading ? "Uploading..." : "Tap to select image"}</span>
+              </Button>
             </div>
           </div>
           <DialogFooter>
