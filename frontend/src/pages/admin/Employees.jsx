@@ -32,7 +32,7 @@ const Employees = () => {
   const [newEmployee, setNewEmployee] = useState({
     name: "", phone: "", email: "", role: "tailor", pay_type: "weekly", address: "", joining_date: "", salary: 0, documents: []
   });
-  const [newPayment, setNewPayment] = useState({ amount: 0, date: "", mode: "cash", notes: "", order_id: "", item_index: 0 });
+  const [newPayment, setNewPayment] = useState({ amount: 0, date: "", mode: "cash", notes: "", order_id: "", item_index: 0, hours: 0 });
   const [newHours, setNewHours] = useState({ date: "", hours: 0, order_id: "", item_index: 0, notes: "" });
   const [newWork, setNewWork] = useState({ order_id: "", item_index: 0, date: "", hours: 0, notes: "" });
 
@@ -81,7 +81,7 @@ const Employees = () => {
       await axios.post(`${API}/employees/${selectedEmployee.id}/payment`, newPayment, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Payment recorded");
       setShowPaymentModal(false);
-      setNewPayment({ amount: 0, date: "", mode: "cash", notes: "", order_id: "", item_index: 0 });
+      setNewPayment({ amount: 0, date: "", mode: "cash", notes: "", order_id: "", item_index: 0, hours: 0 });
       fetchData();
     } catch { toast.error("Failed to record payment"); }
   };
@@ -324,6 +324,7 @@ const Employees = () => {
                     </select>
                   </div>
                 )}
+                <div className="space-y-2"><Label>Hours Worked *</Label><Input type="number" step="0.5" value={newPayment.hours || 0} onChange={(e) => setNewPayment({ ...newPayment, hours: parseFloat(e.target.value) || 0 })} className="bg-[#F7F2EB] border-transparent rounded-xl" placeholder="e.g., 4" /></div>
               </>
             )}
             <div className="space-y-2"><Label>Amount *</Label><Input type="number" value={newPayment.amount} onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) || 0 })} className="bg-[#F7F2EB] border-transparent rounded-xl" /></div>
@@ -554,6 +555,7 @@ const Employees = () => {
                               <div className="flex flex-wrap items-center gap-2 text-xs text-[#8A7D76] mt-1">
                                 <span className="capitalize px-1.5 py-0.5 bg-[#F7F2EB] rounded">{p.mode?.replace("_", " ")}</span>
                                 {p.order_id && <span className="px-1.5 py-0.5 bg-[#C05C3B]/10 text-[#C05C3B] rounded">Order #{p.order_id}{p.item_index !== undefined && p.item_index !== null ? ` · Item ${p.item_index + 1}` : ""}</span>}
+                                {p.hours > 0 && <span className="px-1.5 py-0.5 bg-[#7A8B99]/10 text-[#7A8B99] rounded">{p.hours} hrs</span>}
                                 {p.notes && <span className="italic">{p.notes}</span>}
                               </div>
                             </div>
