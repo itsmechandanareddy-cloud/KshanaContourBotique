@@ -4,8 +4,7 @@ import { useAuth } from "../App";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
-import { ShieldCheck, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/5x4gmkkq_image.png";
@@ -20,134 +19,76 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!phone || !password) {
-      toast.error("Please fill all fields");
-      return;
-    }
-    
+    if (!phone || !password) { toast.error("Please fill all fields"); return; }
     setLoading(true);
     const result = await login(phone, password, true);
     setLoading(false);
-    
-    if (result.success) {
-      toast.success("Welcome back!");
-      navigate("/admin");
-    } else {
-      toast.error(result.error);
-    }
+    if (result.success) { toast.success("Welcome back!"); navigate("/admin"); }
+    else { toast.error(result.error); }
   };
 
   return (
-    <div className="min-h-screen flex bg-[#FDFBF7]">
-      {/* Left side - Image */}
-      <div 
-        className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
-        style={{ 
-          backgroundImage: `url('https://images.unsplash.com/photo-1753162658094-86e570c6a707?w=1200')`
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2D2420]/70 to-transparent" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-white">
-          <button 
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors w-fit"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Home
+    <div className="min-h-screen flex bg-[#FDFBF7]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+      {/* Left */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#2D2420] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-[#FDFBF7]/40 hover:text-[#FDFBF7]/70 transition-colors w-fit text-xs uppercase tracking-[0.15em]">
+            <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />Back
           </button>
           <div>
-            <h1 className="font-['Cormorant_Garamond'] text-5xl font-light mb-4">
-              Admin Portal
+            <img src={LOGO_URL} alt="Kshana" className="w-12 h-12 object-cover opacity-60 mb-8" />
+            <h1 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#FDFBF7] leading-tight">
+              Admin<br />Portal
             </h1>
-            <p className="text-lg text-white/80 max-w-md">
-              Manage your boutique, track orders, and grow your business with our comprehensive dashboard.
+            <div className="w-12 h-px bg-[#D19B5A] mt-6 mb-6" />
+            <p className="text-[#FDFBF7]/40 max-w-sm leading-relaxed">
+              Manage your boutique, track orders, and grow your business.
             </p>
+          </div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#FDFBF7]/20">Kshana Contour &copy; 2026</p>
+        </div>
+      </div>
+
+      {/* Right */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-10">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl font-light text-[#2D2420]">Sign In</h2>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#2D2420]/40 mt-3">Admin Access</p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-[0.1em] text-[#2D2420]/50">Phone Number</Label>
+              <Input type="tel" placeholder="Enter your phone number" value={phone} onChange={(e) => setPhone(e.target.value)}
+                className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-12 px-0 focus:border-[#2D2420] focus:ring-0 transition-colors"
+                data-testid="admin-phone-input" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-[0.1em] text-[#2D2420]/50">Password</Label>
+              <div className="relative">
+                <Input type={showPassword ? "text" : "password"} placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="bg-transparent border-b border-[#2D2420]/15 rounded-none h-12 px-0 pr-10 focus:border-[#2D2420] focus:ring-0 transition-colors"
+                  data-testid="admin-password-input" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-1/2 -translate-y-1/2 text-[#2D2420]/30 hover:text-[#2D2420]/60">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <Button type="submit" disabled={loading}
+              className="w-full bg-[#2D2420] hover:bg-[#2D2420]/90 text-[#FDFBF7] rounded-none h-12 text-xs uppercase tracking-[0.15em] mt-8 transition-all"
+              data-testid="admin-login-button">
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+          <div className="mt-8 text-center">
+            <a href="/login" className="text-xs uppercase tracking-[0.1em] text-[#D19B5A] hover:text-[#2D2420] transition-colors">Customer Login</a>
           </div>
         </div>
       </div>
 
-      {/* Right side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <Card className="w-full max-w-md border-[#EFEBE4] shadow-[0_4px_24px_-8px_rgba(139,102,85,0.08)]">
-          <CardHeader className="space-y-4 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-[#C05C3B]/10 flex items-center justify-center">
-              <ShieldCheck className="w-8 h-8 text-[#C05C3B]" strokeWidth={1.5} />
-            </div>
-            <div>
-              <CardTitle className="font-['Cormorant_Garamond'] text-3xl font-medium text-[#2D2420]">
-                Admin Login
-              </CardTitle>
-              <CardDescription className="text-[#8A7D76] mt-2">
-                Sign in to manage your boutique
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-[#5C504A] font-medium">
-                  Phone Number
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="bg-[#F7F2EB] border-transparent focus:bg-white focus:border-[#C05C3B] focus:ring-2 focus:ring-[#C05C3B]/20 rounded-xl h-12"
-                  data-testid="admin-phone-input"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-[#5C504A] font-medium">
-                  Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="bg-[#F7F2EB] border-transparent focus:bg-white focus:border-[#C05C3B] focus:ring-2 focus:ring-[#C05C3B]/20 rounded-xl h-12 pr-12"
-                    data-testid="admin-password-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8A7D76] hover:text-[#5C504A]"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#C05C3B] hover:bg-[#A84C2F] text-white rounded-full h-12 text-base font-medium shadow-[0_4px_12px_rgba(192,92,59,0.25)] hover:shadow-[0_6px_16px_rgba(192,92,59,0.35)] transition-all"
-                data-testid="admin-login-button"
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
-            <div className="mt-6 text-center">
-              <a
-                href="/login"
-                className="text-sm text-[#C05C3B] hover:text-[#A84C2F] transition-colors"
-              >
-                Customer Login
-              </a>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Mobile back button */}
-      <button 
-        onClick={() => navigate("/")}
-        className="lg:hidden fixed top-4 left-4 p-2 bg-white rounded-full shadow-md"
-      >
-        <ArrowLeft className="w-5 h-5 text-[#2D2420]" />
+      <button onClick={() => navigate("/")} className="lg:hidden fixed top-4 left-4 p-2 bg-white border border-[#2D2420]/10">
+        <ArrowLeft className="w-4 h-4 text-[#2D2420]" />
       </button>
     </div>
   );

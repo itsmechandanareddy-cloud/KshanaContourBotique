@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth, API } from "../../App";
 import axios from "axios";
 import { Button } from "../../components/ui/button";
-import { Card, CardContent } from "../../components/ui/card";
 import { 
   ShoppingBag, MessageCircle, Instagram, MapPin, Phone, 
-  Mail, Star, LogOut, ChevronRight, Scissors
+  Mail, Star, LogOut, ChevronRight, ArrowRight
 } from "lucide-react";
 
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_869a086f-518b-43e3-a2ba-4fade532d0ef/artifacts/5x4gmkkq_image.png";
@@ -23,231 +22,116 @@ const CustomerHome = () => {
     { id: 4, image_url: "https://customer-assets.emergentagent.com/job_kshana-contour/artifacts/6oa9xqr3_WhatsApp%20Image%202026-04-14%20at%2012.30.19%20PM.jpeg", title: "Purple Velvet Designer" },
   ];
 
-  useEffect(() => {
-    fetchGallery();
-  }, []);
+  useEffect(() => { fetchGallery(); }, []);
 
   const fetchGallery = async () => {
     try {
-      const response = await axios.get(`${API}/gallery`);
-      setGallery(response.data.length > 0 ? response.data : defaultGallery);
-    } catch {
-      setGallery(defaultGallery);
-    }
+      const r = await axios.get(`${API}/gallery`);
+      setGallery(r.data.length > 0 ? r.data : defaultGallery);
+    } catch { setGallery(defaultGallery); }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const handleLogout = async () => { await logout(); navigate("/"); };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]">
+    <div className="min-h-screen bg-[#FDFBF7]" style={{ fontFamily: "'Manrope', sans-serif" }}>
       {/* Header */}
-      <header className="bg-white border-b border-[#EFEBE4] sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-[#2D2420]/10">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Scissors className="w-6 h-6 text-[#C05C3B]" />
-            <span className="font-['Cormorant_Garamond'] text-xl font-semibold text-[#2D2420]">
-              Kshana Contour
-            </span>
+            <img src={LOGO_URL} alt="Kshana" className="w-8 h-8 object-cover" />
+            <span className="font-['Cormorant_Garamond'] text-lg font-light text-[#2D2420] tracking-wide">Kshana Contour</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/customer/orders")}
-              className="border-[#EFEBE4] rounded-full"
-              data-testid="my-orders-button"
-            >
-              <ShoppingBag className="w-4 h-4 mr-2" />
-              My Orders
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="text-[#8A7D76] hover:text-[#B85450]"
-              data-testid="customer-logout-button"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
+          <Button onClick={handleLogout} variant="ghost" className="text-[#2D2420]/40 hover:text-[#2D2420] rounded-none text-xs uppercase tracking-[0.1em]" data-testid="customer-logout">
+            <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />Sign Out
+          </Button>
         </div>
       </header>
 
-      {/* Welcome Section */}
-      <section className="py-16 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <img src={LOGO_URL} alt="Kshana Contour" className="h-32 w-auto mx-auto mb-6" />
-          <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light text-[#2D2420] mb-4">
-            Welcome, {user?.name || "Valued Customer"}!
+      <div className="max-w-5xl mx-auto px-6 py-12 space-y-16">
+        {/* Welcome */}
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A] mb-3">Welcome back</p>
+          <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light text-[#2D2420]">
+            {user?.name || "Customer"}
           </h1>
-          <p className="text-lg tracking-[0.2em] text-[#8C3B24] font-medium mb-4">
-            CLASSY. AESTHETIC. ELEGANT
-          </p>
-          <p className="text-[#5C504A] max-w-2xl mx-auto">
-            Thank you for choosing Kshana Contour. We're honored to craft your special garments 
-            with the utmost care and precision.
-          </p>
+          <div className="w-12 h-px bg-[#D19B5A] mt-6" />
         </div>
-      </section>
 
-      {/* Quick Actions */}
-      <section className="py-8 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card 
-              className="bg-white border-[#EFEBE4] shadow-[0_4px_24px_-8px_rgba(139,102,85,0.08)] cursor-pointer card-hover"
-              onClick={() => navigate("/customer/orders")}
-            >
-              <CardContent className="p-8 flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-[#C05C3B]/10 flex items-center justify-center">
-                  <ShoppingBag className="w-8 h-8 text-[#C05C3B]" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-['Cormorant_Garamond'] text-2xl font-medium text-[#2D2420]">
-                    View My Orders
-                  </h3>
-                  <p className="text-[#8A7D76]">Track your orders, measurements & payments</p>
-                </div>
-                <ChevronRight className="w-6 h-6 text-[#8A7D76]" />
-              </CardContent>
-            </Card>
-
-            <a 
-              href="https://wa.me/919187202605"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Card className="bg-white border-[#EFEBE4] shadow-[0_4px_24px_-8px_rgba(139,102,85,0.08)] cursor-pointer card-hover h-full">
-                <CardContent className="p-8 flex items-center gap-6 h-full">
-                  <div className="w-16 h-16 rounded-2xl bg-[#25D366]/10 flex items-center justify-center">
-                    <MessageCircle className="w-8 h-8 text-[#25D366]" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-['Cormorant_Garamond'] text-2xl font-medium text-[#2D2420]">
-                      Chat with Us
-                    </h3>
-                    <p className="text-[#8A7D76]">Contact us on WhatsApp for queries</p>
-                  </div>
-                  <ChevronRight className="w-6 h-6 text-[#8A7D76]" />
-                </CardContent>
-              </Card>
-            </a>
-          </div>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button onClick={() => navigate("/customer/orders")}
+            className="flex items-center justify-between p-8 bg-[#2D2420] text-[#FDFBF7] hover:bg-[#3D3430] transition-all duration-300 group"
+            data-testid="view-orders-btn">
+            <div className="flex items-center gap-4">
+              <ShoppingBag className="w-6 h-6 text-[#D19B5A]" strokeWidth={1.5} />
+              <div className="text-left">
+                <p className="text-sm font-light">My Orders</p>
+                <p className="text-xs text-[#FDFBF7]/40 mt-1">Track your order status</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#FDFBF7]/30 group-hover:text-[#FDFBF7]/70 group-hover:translate-x-1 transition-all" strokeWidth={1.5} />
+          </button>
+          <a href="https://wa.me/919187202605" target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-between p-8 border border-[#2D2420]/10 hover:border-[#2D2420]/30 transition-all duration-300 group"
+            data-testid="whatsapp-link">
+            <div className="flex items-center gap-4">
+              <MessageCircle className="w-6 h-6 text-[#25D366]" strokeWidth={1.5} />
+              <div className="text-left">
+                <p className="text-sm text-[#2D2420] font-light">WhatsApp Us</p>
+                <p className="text-xs text-[#2D2420]/40 mt-1">Chat with us directly</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#2D2420]/20 group-hover:text-[#2D2420]/50 group-hover:translate-x-1 transition-all" strokeWidth={1.5} />
+          </a>
         </div>
-      </section>
 
-      {/* Gallery Section */}
-      <section className="py-12 px-6 bg-[#F7F2EB]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8C3B24] mb-3">
-              Our Work
-            </p>
-            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-[#2D2420] font-medium">
-              Gallery
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {gallery.slice(0, 4).map((item) => (
-              <div 
-                key={item.id}
-                className="aspect-square overflow-hidden rounded-2xl"
-              >
-                <img 
-                  src={item.image_url}
-                  alt={item.title}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
+        {/* Gallery */}
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A] mb-4">Our Work</p>
+          <h2 className="font-['Cormorant_Garamond'] text-3xl font-light text-[#2D2420] mb-8">Gallery</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {gallery.slice(0, 8).map((item) => (
+              <div key={item.id} className="group relative aspect-square overflow-hidden">
+                <img src={item.image_url || item.url} alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-[#2D2420]/0 group-hover:bg-[#2D2420]/30 transition-all duration-500" />
               </div>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Google Reviews */}
-      <section className="py-12 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <a 
-            href="https://maps.app.goo.gl/c7z46uTDaKbCNvNr9"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-4 bg-white border border-[#EFEBE4] rounded-2xl px-8 py-6 shadow-[0_4px_24px_-8px_rgba(139,102,85,0.08)] hover:shadow-[0_8px_32px_-8px_rgba(139,102,85,0.15)] transition-all"
-          >
-            <div className="flex -space-x-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-              ))}
-            </div>
-            <span className="text-[#2D2420] font-medium">View our Google Reviews</span>
+        {/* Contact & Links */}
+        <div className="border-t border-[#2D2420]/10 pt-12">
+          <p className="text-xs uppercase tracking-[0.3em] text-[#D19B5A] mb-8">Get in Touch</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { href: "tel:+919187202605", icon: Phone, label: "Call", detail: "9187202605" },
+              { href: "mailto:kshanaconture@gmail.com", icon: Mail, label: "Email", detail: "kshanaconture@gmail.com" },
+              { href: "https://maps.app.goo.gl/c7z46uTDaKbCNvNr9", icon: MapPin, label: "Visit", detail: "Google Maps" },
+              { href: "https://www.instagram.com/kshana_contour", icon: Instagram, label: "Follow", detail: "@kshana_contour" },
+            ].map(({ href, icon: Icon, label, detail }) => (
+              <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+                className="text-center group">
+                <Icon className="w-5 h-5 text-[#2D2420]/30 mx-auto mb-3 group-hover:text-[#D19B5A] transition-colors" strokeWidth={1.5} />
+                <p className="text-xs uppercase tracking-[0.15em] text-[#2D2420]/40 mb-1">{label}</p>
+                <p className="text-sm text-[#2D2420] font-light truncate">{detail}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Reviews */}
+        <div className="text-center py-8">
+          <a href="https://maps.app.goo.gl/c7z46uTDaKbCNvNr9" target="_blank" rel="noopener noreferrer" className="inline-flex flex-col items-center gap-3 group">
+            <div className="flex gap-1">{[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 text-[#D19B5A] fill-[#D19B5A]" />)}</div>
+            <p className="text-xs uppercase tracking-[0.15em] text-[#2D2420]/40 group-hover:text-[#D19B5A] transition-colors">View Google Reviews</p>
           </a>
         </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="py-12 px-6 bg-[#2D2420] text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="font-['Cormorant_Garamond'] text-3xl font-medium">
-              Get in Touch
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            <a 
-              href="tel:+919187202605"
-              className="flex flex-col items-center p-6 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
-            >
-              <Phone className="w-8 h-8 text-[#D19B5A] mb-3" />
-              <p className="text-white/70">9187202605</p>
-              <p className="text-white/70">9108253760</p>
-            </a>
-            <a 
-              href="mailto:kshanaconture@gmail.com"
-              className="flex flex-col items-center p-6 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
-            >
-              <Mail className="w-8 h-8 text-[#D19B5A] mb-3" />
-              <p className="text-white/70">kshanaconture@gmail.com</p>
-            </a>
-            <a 
-              href="https://maps.app.goo.gl/c7z46uTDaKbCNvNr9"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-6 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
-            >
-              <MapPin className="w-8 h-8 text-[#D19B5A] mb-3" />
-              <p className="text-white/70">View on Google Maps</p>
-            </a>
-          </div>
-          <div className="mt-8 flex justify-center gap-4">
-            <a 
-              href="https://wa.me/919187202605"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-full"
-            >
-              <MessageCircle className="w-5 h-5" />
-              WhatsApp
-            </a>
-            <a 
-              href="https://www.instagram.com/kshana_contour"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full"
-            >
-              <Instagram className="w-5 h-5" />
-              Instagram
-            </a>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* WhatsApp Float */}
-      <a
-        href="https://wa.me/919187202605"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="whatsapp-float"
-      >
+      <a href="https://wa.me/919187202605" target="_blank" rel="noopener noreferrer" className="whatsapp-float" data-testid="whatsapp-float">
         <MessageCircle className="w-7 h-7" />
       </a>
     </div>
