@@ -255,6 +255,8 @@ class EmployeePayment(BaseModel):
     amount: float
     date: str
     mode: str
+    order_id: Optional[str] = None
+    item_index: Optional[int] = None
     notes: Optional[str] = None
 
 class EmployeeHours(BaseModel):

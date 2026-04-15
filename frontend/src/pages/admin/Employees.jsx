@@ -32,7 +32,7 @@ const Employees = () => {
   const [newEmployee, setNewEmployee] = useState({
     name: "", phone: "", email: "", role: "tailor", pay_type: "weekly", address: "", joining_date: "", salary: 0, documents: []
   });
-  const [newPayment, setNewPayment] = useState({ amount: 0, date: "", mode: "cash", notes: "" });
+  const [newPayment, setNewPayment] = useState({ amount: 0, date: "", mode: "cash", notes: "", order_id: "", item_index: 0 });
   const [newHours, setNewHours] = useState({ date: "", hours: 0, order_id: "", item_index: 0, notes: "" });
   const [newWork, setNewWork] = useState({ order_id: "", item_index: 0, date: "", hours: 0, notes: "" });
 
@@ -81,7 +81,7 @@ const Employees = () => {
       await axios.post(`${API}/employees/${selectedEmployee.id}/payment`, newPayment, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Payment recorded");
       setShowPaymentModal(false);
-      setNewPayment({ amount: 0, date: "", mode: "cash", notes: "" });
+      setNewPayment({ amount: 0, date: "", mode: "cash", notes: "", order_id: "", item_index: 0 });
       fetchData();
     } catch { toast.error("Failed to record payment"); }
   };
@@ -306,6 +306,26 @@ const Employees = () => {
         <DialogContent className="bg-[#FDFBF7] border-[#EFEBE4]">
           <DialogHeader><DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#2D2420]">Record Payment - {selectedEmployee?.name}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Worker: Order & Item selection */}
+            {(selectedEmployee?.pay_type === "hourly" || selectedEmployee?.role === "worker") && (
+              <>
+                <div className="space-y-2"><Label>Order *</Label>
+                  <select value={newPayment.order_id || ""} onChange={(e) => setNewPayment({ ...newPayment, order_id: e.target.value })} className="h-10 w-full px-3 text-sm bg-[#F7F2EB] border-transparent rounded-xl cursor-pointer focus:outline-none">
+                    <option value="">Select order</option>
+                    {orders.map(o => <option key={o.order_id} value={o.order_id}>#{o.order_id} - {o.customer_name}</option>)}
+                  </select>
+                </div>
+                {newPayment.order_id && (
+                  <div className="space-y-2"><Label>Item</Label>
+                    <select value={String(newPayment.item_index)} onChange={(e) => setNewPayment({ ...newPayment, item_index: parseInt(e.target.value) })} className="h-10 w-full px-3 text-sm bg-[#F7F2EB] border-transparent rounded-xl cursor-pointer focus:outline-none">
+                      {(orders.find(o => o.order_id === newPayment.order_id)?.items || []).map((item, i) => (
+                        <option key={i} value={String(i)}>Item {i + 1}: {item.service_type}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </>
+            )}
             <div className="space-y-2"><Label>Amount *</Label><Input type="number" value={newPayment.amount} onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) || 0 })} className="bg-[#F7F2EB] border-transparent rounded-xl" /></div>
             <div className="space-y-2"><Label>Date *</Label><Input type="date" value={newPayment.date} onChange={(e) => setNewPayment({ ...newPayment, date: e.target.value })} className="bg-[#F7F2EB] border-transparent rounded-xl" /></div>
             <div className="space-y-2"><Label>Mode</Label>
@@ -531,9 +551,10 @@ const Employees = () => {
                           <div key={i} className="flex justify-between p-3 bg-white rounded-xl border border-[#EFEBE4]">
                             <div>
                               <span className="font-medium text-[#2D2420] text-sm">{p.date}</span>
-                              <div className="text-xs text-[#8A7D76] mt-1">
+                              <div className="flex flex-wrap items-center gap-2 text-xs text-[#8A7D76] mt-1">
                                 <span className="capitalize px-1.5 py-0.5 bg-[#F7F2EB] rounded">{p.mode?.replace("_", " ")}</span>
-                                {p.notes && <span className="ml-2 italic">{p.notes}</span>}
+                                {p.order_id && <span className="px-1.5 py-0.5 bg-[#C05C3B]/10 text-[#C05C3B] rounded">Order #{p.order_id}{p.item_index !== undefined && p.item_index !== null ? ` · Item ${p.item_index + 1}` : ""}</span>}
+                                {p.notes && <span className="italic">{p.notes}</span>}
                               </div>
                             </div>
                             <span className="font-semibold text-[#7E8B76] text-sm">{fmt(p.amount)}</span>
